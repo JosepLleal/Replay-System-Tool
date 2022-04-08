@@ -36,7 +36,6 @@ public class Record : MonoBehaviour
         }
     }
 
-
     void FixedUpdate()
     {
         //save states if we are not in replay mode
