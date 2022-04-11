@@ -31,7 +31,7 @@ public class Record : MonoBehaviour
         }
         else
         {
-            //if it is in replay mode don't use physics
+            //if it is in replay mode, don't use physics
             if (rigidBody != null) rigidBody.isKinematic = false;
         }
     }
