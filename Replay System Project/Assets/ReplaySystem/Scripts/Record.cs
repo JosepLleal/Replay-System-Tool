@@ -38,7 +38,7 @@ public class Record : MonoBehaviour
 
     void FixedUpdate()
     {
-        //save states if we are not in replay mode
+        //record states if we are not in replay mode
         if(replay.ReplayMode() == false)
         {
             Frame frame = new Frame(gameObject, transform.position, transform.rotation, transform.localScale);
@@ -60,11 +60,11 @@ public class Record : MonoBehaviour
 
     public Frame GetFrameAtIndex(int index)
     {
-        return frames[index];
+        return index >= frames.Count ? null : frames[index];
     }
 
     public int GetLength()
     {
-        return frames.Count - 1;
+        return frames.Count;
     }
 }

@@ -16,13 +16,15 @@ public class ReplayManager : MonoBehaviour
     private float[] speeds = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f};
     private int speedIndex = 2;
 
+    private Camera[] cameras;
+
     public enum ReplayState { PAUSE, PLAYING, PLAY_REVERSE}
     public ReplayState state = ReplayState.PAUSE;
-
+    
     // Start is called before the first frame update
     void Start()
     {
-        
+        cameras = Camera.allCameras;
     }
 
     // Update is called once per frame
@@ -87,9 +89,9 @@ public class ReplayManager : MonoBehaviour
                     SetTransforms(r, frameIndex);
                 }
 
-                if (frameIndex < recordLength - 1)
+                if (frameIndex < recordMaxLength - 1)
                     frameIndex++;
-                
+
             }
 
         }
@@ -98,6 +100,8 @@ public class ReplayManager : MonoBehaviour
     void SetTransforms(Record rec, int index)
     {
         Frame f = rec.GetFrameAtIndex(index);
+        if (f == null) return;
+
         GameObject go = f.GetGO();
 
         go.transform.position = f.GetPosition();
@@ -126,8 +130,21 @@ public class ReplayManager : MonoBehaviour
     {
         frameIndex = 0;
 
+        foreach (Record r in records)
+        {
+            SetTransforms(r, frameIndex);
+        }
+
         if (state == ReplayState.PAUSE)
             state = ReplayState.PLAYING;
+    }
+
+    void PauseResume()
+    {
+        if (state == ReplayState.PAUSE)
+            state = ReplayState.PLAYING;
+        else
+            state = ReplayState.PAUSE;
     }
 
     void SpeedUp()
@@ -145,6 +162,8 @@ public class ReplayManager : MonoBehaviour
 
         Time.timeScale = speeds[speedIndex];
     }
+
+
 
     
 
