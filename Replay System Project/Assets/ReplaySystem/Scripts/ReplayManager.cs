@@ -16,7 +16,9 @@ public class ReplayManager : MonoBehaviour
     private float[] speeds = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f};
     private int speedIndex = 2;
 
+    private GameObject replayCam;
     private Camera[] cameras;
+    private int cameraIndex = 0;
 
     public enum ReplayState { PAUSE, PLAYING, PLAY_REVERSE}
     public ReplayState state = ReplayState.PAUSE;
@@ -24,7 +26,7 @@ public class ReplayManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        cameras = Camera.allCameras;
+        
     }
 
     // Update is called once per frame
@@ -38,14 +40,19 @@ public class ReplayManager : MonoBehaviour
 
             if(isReplayMode)
             {
+                //replay temporary camera instantiation
+                InstantiateReplayCamera();
+
                 //set gameobjects transforms to starting frame
-                foreach(Record r in records)
+                foreach (Record r in records)
                 {
                     SetTransforms(r, 0);
                 }
             }
             else
             {
+                DeleteReplayCam();
+
                 //set gameobjects transforms back to current state
                 foreach (Record r in records)
                 {
@@ -54,12 +61,11 @@ public class ReplayManager : MonoBehaviour
             }
         }
 
+        // ------ TESTING INPUTS ------------
+
         if (Input.GetKeyDown(KeyCode.P))
         {
-            if (state == ReplayState.PAUSE)
-                state = ReplayState.PLAYING;
-            else
-                state = ReplayState.PAUSE;
+            PauseResume();
         }
 
         if (Input.GetKeyDown(KeyCode.F1))
@@ -75,7 +81,15 @@ public class ReplayManager : MonoBehaviour
         {
             SpeedUp();
         }
-
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            NextCamera();
+        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            PreviousCamera();
+        }
+        //----------------------------------------
     }
 
     private void FixedUpdate()
@@ -97,6 +111,7 @@ public class ReplayManager : MonoBehaviour
         }
     }
 
+    //set transforms from a frame at record[index]
     void SetTransforms(Record rec, int index)
     {
         Frame f = rec.GetFrameAtIndex(index);
@@ -109,23 +124,45 @@ public class ReplayManager : MonoBehaviour
         go.transform.localScale = f.GetScale();
     }
 
+    //Add record to records list
     public void AddRecord(Record r)
     {
         records.Add(r);
     }
 
+    //Get max length of recordable frames
     public  int  GetMaxLength() 
     {
         return recordMaxLength;
     }
 
+    //Return if in replayMode or not
     public bool ReplayMode()
     {
         return isReplayMode;
     }
 
-    //---- REPLAY TOOLS ---------
+    //Instantiate temporary camera for replay
+    void InstantiateReplayCamera()
+    {
+        replayCam = new GameObject("ReplayCamera");
+        replayCam.AddComponent<Camera>();
 
+        cameras = Camera.allCameras;
+
+
+    }
+
+    //Delete instantiated replay camera
+    void DeleteReplayCam()
+    {
+        Destroy(replayCam);
+
+    }
+
+    //------------- REPLAY TOOLS -------------------
+
+    //Start replay from begining
     void RestartReplay()
     {
         frameIndex = 0;
@@ -135,10 +172,9 @@ public class ReplayManager : MonoBehaviour
             SetTransforms(r, frameIndex);
         }
 
-        if (state == ReplayState.PAUSE)
-            state = ReplayState.PLAYING;
     }
 
+    //Pause / Resume function
     void PauseResume()
     {
         if (state == ReplayState.PAUSE)
@@ -147,6 +183,7 @@ public class ReplayManager : MonoBehaviour
             state = ReplayState.PAUSE;
     }
 
+    //Increase replay speed
     void SpeedUp()
     {
         if(speedIndex < speeds.Length - 1)
@@ -155,6 +192,7 @@ public class ReplayManager : MonoBehaviour
         Time.timeScale = speeds[speedIndex];
     }
 
+    //Decrease replay speed
     void SpeedDown()
     {
         if (speedIndex > 0)
@@ -163,9 +201,52 @@ public class ReplayManager : MonoBehaviour
         Time.timeScale = speeds[speedIndex];
     }
 
+    //Change to next camera in scene
+    void NextCamera()
+    {
+        for (int i = 0; i < cameras.Length; i++)
+        {
+            if (cameras[i] == Camera.main)
+                cameraIndex = i;
+        }
 
+        cameraIndex++;
 
-    
+        if(cameras.Length == cameraIndex)
+        {
+            cameraIndex = 0;
+            cameras[cameras.Length - 1].enabled = false;
+            cameras[cameraIndex].enabled = true;
+        }
+        else
+        {
+            cameras[cameraIndex - 1].enabled = false;
+            cameras[cameraIndex].enabled = true;
+        }
+    }
 
-    
+    //Change to previous camera in scene
+    void PreviousCamera()
+    {
+        for (int i = 0; i < cameras.Length; i++)
+        {
+            if (cameras[i] == Camera.main)
+                cameraIndex = i;
+        }
+
+        cameraIndex--;
+
+        if (cameraIndex < 0)
+        {
+            cameraIndex = cameras.Length - 1;
+            cameras[0].enabled = false;
+            cameras[cameraIndex].enabled = true;
+        }
+        else
+        {
+            cameras[cameraIndex + 1].enabled = false;
+            cameras[cameraIndex].enabled = true;
+        }
+    }
+
 }

@@ -12,6 +12,8 @@ public class Record : MonoBehaviour
 
     int maxLength;
 
+    public bool record = false;
+
 
     void Start()
     {
@@ -24,8 +26,9 @@ public class Record : MonoBehaviour
 
     void Update()
     {
+        record = !replay.ReplayMode();
         
-        if(replay.ReplayMode())
+        if(!record)
         {
             if(rigidBody != null ) rigidBody.isKinematic = true;
         }
@@ -39,7 +42,7 @@ public class Record : MonoBehaviour
     void FixedUpdate()
     {
         //record states if we are not in replay mode
-        if(replay.ReplayMode() == false)
+        if(record)
         {
             Frame frame = new Frame(gameObject, transform.position, transform.rotation, transform.localScale);
             AddFrame(frame);
