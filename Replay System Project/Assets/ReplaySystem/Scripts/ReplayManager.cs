@@ -32,28 +32,15 @@ public class ReplayManager : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.R))
         {
-            isReplayMode = !isReplayMode;
+           
 
             if(isReplayMode)
             {
-                //temporary replay camera instantiation
-                InstantiateReplayCamera();
-
-                //set gameobjects transforms to starting frame
-                foreach (Record r in records)
-                {
-                    SetTransforms(r, 0);
-                }
+                QuitReplayMode();
             }
             else
             {
-                DeleteReplayCam();
-
-                //set gameobjects transforms back to current state
-                foreach (Record r in records)
-                {
-                    SetTransforms(r, r.GetLength()-1);
-                }
+                EnterReplayMode();
             }
         }
 
@@ -172,6 +159,35 @@ public class ReplayManager : MonoBehaviour
     }
 
     //------------- REPLAY TOOLS -------------------//
+
+    // Start replay mode
+    void EnterReplayMode()
+    {
+        isReplayMode = true;
+
+        //temporary replay camera instantiation
+        InstantiateReplayCamera();
+
+        //set gameobjects transforms to starting frame
+        foreach (Record r in records)
+        {
+            SetTransforms(r, 0);
+        }
+    }
+
+    //Exit replay mode
+    void QuitReplayMode()
+    {
+        isReplayMode = false;
+
+        DeleteReplayCam();
+
+        //set gameobjects transforms back to current state
+        foreach (Record r in records)
+        {
+            SetTransforms(r, r.GetLength() - 1);
+        }
+    }
 
     //Start replay from begining
     void RestartReplay()

@@ -58,6 +58,7 @@ public class Record : MonoBehaviour
        
     }
 
+    //Add frame, if list has maxLength remove first element
     void AddFrame(Frame frame)
     {
         if(GetLength() >= maxLength)
@@ -69,6 +70,7 @@ public class Record : MonoBehaviour
 
     }
 
+    // GETTERS
     public Frame GetFrameAtIndex(int index)
     {
         return index >= frames.Count ? null : frames[index];
