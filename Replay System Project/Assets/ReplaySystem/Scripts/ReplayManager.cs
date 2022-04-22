@@ -9,8 +9,6 @@ public class ReplayManager : MonoBehaviour
     
     private bool isReplayMode = false;
     private int recordMaxLength = 600;
-
-    private int recordLength;
     private int frameIndex = 0;
 
     private float[] speeds = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f};
@@ -32,15 +30,13 @@ public class ReplayManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        recordLength = records[0].GetLength();
-
         if(Input.GetKeyDown(KeyCode.R))
         {
             isReplayMode = !isReplayMode;
 
             if(isReplayMode)
             {
-                //replay temporary camera instantiation
+                //temporary replay camera instantiation
                 InstantiateReplayCamera();
 
                 //set gameobjects transforms to starting frame
@@ -56,39 +52,44 @@ public class ReplayManager : MonoBehaviour
                 //set gameobjects transforms back to current state
                 foreach (Record r in records)
                 {
-                    SetTransforms(r, r.GetLength());
+                    SetTransforms(r, r.GetLength()-1);
                 }
             }
         }
 
         // ------ TESTING INPUTS ------------
+        if(isReplayMode)
+        {
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                PauseResume();
+            }
 
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            PauseResume();
-        }
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                RestartReplay();
+            }
 
-        if (Input.GetKeyDown(KeyCode.F1))
-        {
-            RestartReplay();
-        }
+            if (Input.GetKeyDown(KeyCode.K))
+            {
+                SpeedDown();
+            }
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                SpeedUp();
+            }
 
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            SpeedDown();
-        }
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            SpeedUp();
-        }
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            NextCamera();
-        }
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            PreviousCamera();
-        }
+            
+
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                NextCamera();
+            }
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                PreviousCamera();
+            }
+        }        
         //----------------------------------------
     }
 
@@ -108,21 +109,21 @@ public class ReplayManager : MonoBehaviour
 
             }
 
+            // Testing purposes -------------------
+            if (Input.GetKey(KeyCode.F3))
+            {
+                GoForward();
+            }
+
+            if (Input.GetKey(KeyCode.F2))
+            {
+                GoBack();
+            }
+
         }
     }
 
-    //set transforms from a frame at record[index]
-    void SetTransforms(Record rec, int index)
-    {
-        Frame f = rec.GetFrameAtIndex(index);
-        if (f == null) return;
-
-        GameObject go = f.GetGO();
-
-        go.transform.position = f.GetPosition();
-        go.transform.rotation = f.GetRotation();
-        go.transform.localScale = f.GetScale();
-    }
+    
 
     //Add record to records list
     public void AddRecord(Record r)
@@ -142,6 +143,19 @@ public class ReplayManager : MonoBehaviour
         return isReplayMode;
     }
 
+    //set transforms from the frame at record[index]
+    void SetTransforms(Record rec, int index)
+    {
+        Frame f = rec.GetFrameAtIndex(index);
+        if (f == null) return;
+
+        GameObject go = f.GetGO();
+
+        go.transform.position = f.GetPosition();
+        go.transform.rotation = f.GetRotation();
+        go.transform.localScale = f.GetScale();
+    }
+
     //Instantiate temporary camera for replay
     void InstantiateReplayCamera()
     {
@@ -149,18 +163,15 @@ public class ReplayManager : MonoBehaviour
         replayCam.AddComponent<Camera>();
 
         cameras = Camera.allCameras;
-
-
     }
 
     //Delete instantiated replay camera
     void DeleteReplayCam()
     {
         Destroy(replayCam);
-
     }
 
-    //------------- REPLAY TOOLS -------------------
+    //------------- REPLAY TOOLS -------------------//
 
     //Start replay from begining
     void RestartReplay()
@@ -181,6 +192,34 @@ public class ReplayManager : MonoBehaviour
             state = ReplayState.PLAYING;
         else
             state = ReplayState.PAUSE;
+    }
+
+    //Advances one frame 
+    void GoForward()
+    {
+        state = ReplayState.PAUSE;
+
+        foreach (Record r in records)
+        {
+            SetTransforms(r, frameIndex);
+        }
+
+        if (frameIndex < recordMaxLength - 1)
+            frameIndex++;
+    }
+
+    //Back one frame
+    void GoBack()
+    {
+        state = ReplayState.PAUSE;
+
+        foreach (Record r in records)
+        {
+            SetTransforms(r, frameIndex);
+        }
+
+        if (frameIndex > 0)
+            frameIndex--;
     }
 
     //Increase replay speed

@@ -7,11 +7,16 @@ public class Record : MonoBehaviour
 
     public ReplayManager replay;
 
+
     private Rigidbody rigidBody;
+
+    //List of recorded Frames 
     private List<Frame> frames = new List<Frame>();
 
-    int maxLength;
+    //Maximum amount of frames that can be stored
+    public int maxLength = 300;
 
+    //when true the gameobject will be recorded
     public bool record = false;
 
 
@@ -19,14 +24,17 @@ public class Record : MonoBehaviour
     {
         rigidBody = GetComponent<Rigidbody>();
 
-        replay.AddRecord(this);
-        maxLength = replay.GetMaxLength();
-
+        if(replay != null)
+        {
+            replay.AddRecord(this);
+            maxLength = replay.GetMaxLength();
+        }
     }
 
     void Update()
     {
-        record = !replay.ReplayMode();
+        if(replay != null)
+            record = !replay.ReplayMode();
         
         if(!record)
         {
