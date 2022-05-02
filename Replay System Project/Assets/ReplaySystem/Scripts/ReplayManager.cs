@@ -89,6 +89,7 @@ public class ReplayManager : MonoBehaviour
                 foreach (Record r in records)
                 {
                     SetTransforms(r, frameIndex);
+                    SetAnimationParameters(r, frameIndex);
                 }
 
                 if (frameIndex < recordMaxLength - 1)
@@ -141,6 +142,31 @@ public class ReplayManager : MonoBehaviour
         go.transform.position = f.GetPosition();
         go.transform.rotation = f.GetRotation();
         go.transform.localScale = f.GetScale();
+    }
+
+    //set animator parameters values from the frame at record[index]
+    void SetAnimationParameters(Record rec, int index)
+    {
+        Frame f = rec.GetFrameAtIndex(index);
+        if (f == null) return;
+
+        Animator animator = rec.GetAnimator();
+
+        foreach(AnimationRecord anim in f.GetAnimationRecords())
+        {
+            if(anim.GetAnimatorType() == AnimatorControllerParameterType.Bool)
+            {
+                animator.SetBool(anim.GetName(), anim.GetBoolValue());
+            }
+            else if (anim.GetAnimatorType() == AnimatorControllerParameterType.Float)
+            {
+                animator.SetFloat(anim.GetName(), anim.GetFloatValue());
+            }
+            else if(anim.GetAnimatorType() == AnimatorControllerParameterType.Int)
+            {
+                animator.SetInteger(anim.GetName(), anim.GetIntValue());
+            }
+        }
     }
 
     //Instantiate temporary camera for replay

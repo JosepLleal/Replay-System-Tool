@@ -59,6 +59,9 @@ namespace StarterAssets
 		[Tooltip("For locking the camera position on all axis")]
 		public bool LockCameraPosition = false;
 
+		[Header("ReplayManager")]
+		public ReplayManager RM;
+
 		// cinemachine
 		private float _cinemachineTargetYaw;
 		private float _cinemachineTargetPitch;
@@ -115,11 +118,15 @@ namespace StarterAssets
 
 		private void Update()
 		{
-			_hasAnimator = TryGetComponent(out _animator);
+			if(RM.ReplayMode() == false)
+            {
+				_hasAnimator = TryGetComponent(out _animator);
+
+				JumpAndGravity();
+				GroundedCheck();
+				Move();
+			}
 			
-			JumpAndGravity();
-			GroundedCheck();
-			Move();
 		}
 
 		private void LateUpdate()

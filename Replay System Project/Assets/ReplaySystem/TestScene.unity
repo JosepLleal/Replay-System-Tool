@@ -249,6 +249,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
+  maxLength: 300
+  record: 0
 --- !u!1 &409669697
 GameObject:
   m_ObjectHideFlags: 0
@@ -445,6 +447,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerArmature
       objectReference: {fileID: 0}
+    - target: {fileID: 4416926081852918490, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+      propertyPath: RM
+      value: 
+      objectReference: {fileID: 409669698}
     - target: {fileID: 5885216827943657505, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
       propertyPath: canPush
       value: 1
@@ -664,6 +670,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
+  maxLength: 300
+  record: 0
 --- !u!1 &1944344379
 GameObject:
   m_ObjectHideFlags: 0
@@ -793,6 +801,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
+  maxLength: 300
+  record: 0
 --- !u!54 &2011337413
 Rigidbody:
   m_ObjectHideFlags: 0
