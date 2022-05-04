@@ -137,7 +137,7 @@ public class ReplayManager : MonoBehaviour
         Frame f = rec.GetFrameAtIndex(index);
         if (f == null) return;
 
-        GameObject go = f.GetGO();
+        GameObject go = rec.GetGameObject();
 
         go.transform.position = f.GetPosition();
         go.transform.rotation = f.GetRotation();
@@ -231,9 +231,16 @@ public class ReplayManager : MonoBehaviour
     void PauseResume()
     {
         if (state == ReplayState.PAUSE)
+        {
             state = ReplayState.PLAYING;
+            Time.timeScale = speeds[speedIndex];
+        }            
         else
+        {
             state = ReplayState.PAUSE;
+            Time.timeScale = 0;
+        }
+            
     }
 
     //Advances one frame 

@@ -64,7 +64,7 @@ public class Record : MonoBehaviour
                 }
             }
 
-            Frame frame = new Frame(gameObject, transform.position, transform.rotation, transform.localScale, animationRecords);
+            Frame frame = new Frame(transform.position, transform.rotation, transform.localScale, animationRecords);
             AddFrame(frame);
         }
        
@@ -96,6 +96,11 @@ public class Record : MonoBehaviour
     public Frame GetFrameAtIndex(int index)
     {
         return index >= frames.Count ? null : frames[index];
+    }
+
+    public GameObject GetGameObject()
+    {
+        return gameObject;
     }
 
     public int GetLength()

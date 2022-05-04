@@ -41,8 +41,4 @@ public class AnimationRecord
     public bool GetBoolValue() { return bValue; }
     public AnimatorControllerParameterType GetAnimatorType() { return animatorType; }
 
-
-     
-
-
 }
