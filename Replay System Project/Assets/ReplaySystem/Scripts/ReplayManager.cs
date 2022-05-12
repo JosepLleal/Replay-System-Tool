@@ -8,8 +8,10 @@ public class ReplayManager : MonoBehaviour
     private List<Record> records = new List<Record>();
     
     private bool isReplayMode = false;
-    private int recordMaxLength = 600;
+    private int recordMaxLength = 3600; // 60fps * 60seconds = 3600 frames 
+
     private int frameIndex = 0;
+    private float replayTime = 0;
 
     private float[] speeds = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f};
     private int speedIndex = 2;
@@ -21,12 +23,7 @@ public class ReplayManager : MonoBehaviour
     public enum ReplayState { PAUSE, PLAYING, PLAY_REVERSE}
     public ReplayState state = ReplayState.PAUSE;
     
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
+    
     // Update is called once per frame
     void Update()
     {
@@ -44,73 +41,32 @@ public class ReplayManager : MonoBehaviour
             }
         }
 
-        // ------ TESTING INPUTS ------------
+        
         if(isReplayMode)
         {
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                PauseResume();
-            }
-
-            if (Input.GetKeyDown(KeyCode.F1))
-            {
-                RestartReplay();
-            }
-
-            if (Input.GetKeyDown(KeyCode.K))
-            {
-                SpeedDown();
-            }
-            if (Input.GetKeyDown(KeyCode.L))
-            {
-                SpeedUp();
-            }
-
-            
-
-            if (Input.GetKeyDown(KeyCode.X))
-            {
-                NextCamera();
-            }
-            if (Input.GetKeyDown(KeyCode.Z))
-            {
-                PreviousCamera();
-            }
-        }        
-        //----------------------------------------
-    }
-
-    private void FixedUpdate()
-    {
-        if (isReplayMode)
-        {
+                        
+            // Replay playing 
             if (state == ReplayState.PLAYING)
             {
-                foreach (Record r in records)
+                if (frameIndex < recordMaxLength - 1 && frameIndex < records[0].GetLength() - 1)
                 {
-                    SetTransforms(r, frameIndex);
-                    SetAnimationParameters(r, frameIndex);
-                }
+                    replayTime += Time.deltaTime;
 
-                if (frameIndex < recordMaxLength - 1)
+                    foreach (Record r in records)
+                    {
+                        SetTransforms(r, frameIndex);
+                        Animator animator = r.GetAnimator();
+                        if (animator != null)
+                            animator.playbackTime = replayTime;
+
+                    }
                     frameIndex++;
-
+                }
+                
             }
-
-            // Testing purposes -------------------
-            if (Input.GetKey(KeyCode.F3))
-            {
-                GoForward();
-            }
-
-            if (Input.GetKey(KeyCode.F2))
-            {
-                GoBack();
-            }
-
         }
-    }
 
+    }
     
 
     //Add record to records list
@@ -120,7 +76,7 @@ public class ReplayManager : MonoBehaviour
     }
 
     //Get max length of recordable frames
-    public  int  GetMaxLength() 
+    public int GetMaxLength() 
     {
         return recordMaxLength;
     }
@@ -144,34 +100,10 @@ public class ReplayManager : MonoBehaviour
         go.transform.localScale = f.GetScale();
     }
 
-    //set animator parameters values from the frame at record[index]
-    void SetAnimationParameters(Record rec, int index)
-    {
-        Frame f = rec.GetFrameAtIndex(index);
-        if (f == null) return;
-
-        Animator animator = rec.GetAnimator();
-
-        foreach(AnimationRecord anim in f.GetAnimationRecords())
-        {
-            if(anim.GetAnimatorType() == AnimatorControllerParameterType.Bool)
-            {
-                animator.SetBool(anim.GetName(), anim.GetBoolValue());
-            }
-            else if (anim.GetAnimatorType() == AnimatorControllerParameterType.Float)
-            {
-                animator.SetFloat(anim.GetName(), anim.GetFloatValue());
-            }
-            else if(anim.GetAnimatorType() == AnimatorControllerParameterType.Int)
-            {
-                animator.SetInteger(anim.GetName(), anim.GetIntValue());
-            }
-        }
-    }
-
     //Instantiate temporary camera for replay
     void InstantiateReplayCamera()
     {
+        //TODO: instantiate camera prefab
         replayCam = new GameObject("ReplayCamera");
         replayCam.AddComponent<Camera>();
 
@@ -193,11 +125,25 @@ public class ReplayManager : MonoBehaviour
 
         //temporary replay camera instantiation
         InstantiateReplayCamera();
+        replayTime = 0;
 
         //set gameobjects transforms to starting frame
         foreach (Record r in records)
         {
             SetTransforms(r, 0);
+
+            Animator animator = r.GetAnimator();
+            if (animator != null)
+            {
+                //stop recording animator
+                animator.StopRecording();
+                r.startedRecording = false;
+
+                //star animator replayMode
+                animator.StartPlayback();
+                animator.playbackTime = 0;
+            }
+                
         }
     }
 
@@ -212,6 +158,10 @@ public class ReplayManager : MonoBehaviour
         foreach (Record r in records)
         {
             SetTransforms(r, r.GetLength() - 1);
+
+            Animator animator = r.GetAnimator();
+            if (animator != null)
+                animator.StopPlayback();
         }
     }
 
@@ -219,6 +169,7 @@ public class ReplayManager : MonoBehaviour
     public void RestartReplay()
     {
         frameIndex = 0;
+        replayTime = 0;
 
         foreach (Record r in records)
         {
@@ -233,12 +184,11 @@ public class ReplayManager : MonoBehaviour
         if (state == ReplayState.PAUSE)
         {
             state = ReplayState.PLAYING;
-            Time.timeScale = speeds[speedIndex];
+            
         }            
         else
         {
             state = ReplayState.PAUSE;
-            Time.timeScale = 0;
         }
             
     }
@@ -247,10 +197,15 @@ public class ReplayManager : MonoBehaviour
     public void GoForward()
     {
         state = ReplayState.PAUSE;
+        replayTime += 1 / 60f;
 
         foreach (Record r in records)
         {
             SetTransforms(r, frameIndex);
+
+            Animator animator = r.GetAnimator();
+            if (animator != null)
+                animator.playbackTime = replayTime;
         }
 
         if (frameIndex < recordMaxLength - 1)
@@ -261,10 +216,15 @@ public class ReplayManager : MonoBehaviour
     public void GoBack()
     {
         state = ReplayState.PAUSE;
+        replayTime -= 1 / 60f;
 
         foreach (Record r in records)
         {
             SetTransforms(r, frameIndex);
+
+            Animator animator = r.GetAnimator();
+            if (animator != null)
+                animator.playbackTime = replayTime;
         }
 
         if (frameIndex > 0)
@@ -277,7 +237,9 @@ public class ReplayManager : MonoBehaviour
         if(speedIndex < speeds.Length - 1)
             speedIndex++;
 
-        Time.timeScale = speeds[speedIndex];
+        //TODO: figure out how to treat speed variations
+
+        //Time.timeScale = speeds[speedIndex];
     }
 
     //Decrease replay speed
@@ -286,7 +248,9 @@ public class ReplayManager : MonoBehaviour
         if (speedIndex > 0)
             speedIndex--;
 
-        Time.timeScale = speeds[speedIndex];
+        //TODO: figure out how to treat speed variations
+
+        //Time.timeScale = speeds[speedIndex];
     }
 
     //Change to next camera in scene

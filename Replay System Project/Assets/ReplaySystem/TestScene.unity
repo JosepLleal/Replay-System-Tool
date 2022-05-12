@@ -383,6 +383,7 @@ MonoBehaviour:
   replay: {fileID: 409669698}
   maxLength: 300
   record: 0
+  startedRecording: 0
 --- !u!1 &376342704
 GameObject:
   m_ObjectHideFlags: 0
@@ -2170,6 +2171,7 @@ MonoBehaviour:
   replay: {fileID: 409669698}
   maxLength: 300
   record: 0
+  startedRecording: 0
 --- !u!1 &1944344379
 GameObject:
   m_ObjectHideFlags: 0
@@ -2565,6 +2567,7 @@ MonoBehaviour:
   replay: {fileID: 409669698}
   maxLength: 300
   record: 0
+  startedRecording: 0
 --- !u!54 &2011337413
 Rigidbody:
   m_ObjectHideFlags: 0
