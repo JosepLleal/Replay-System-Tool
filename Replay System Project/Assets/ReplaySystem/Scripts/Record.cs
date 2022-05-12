@@ -30,6 +30,7 @@ public class Record : MonoBehaviour
             replay.AddRecord(this);
             maxLength = replay.GetMaxLength();
         }
+
     }
 
     void Update()

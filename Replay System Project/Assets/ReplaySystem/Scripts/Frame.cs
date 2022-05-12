@@ -23,5 +23,7 @@ public class Frame
     public Vector3 GetScale() { return scale; }
     public Quaternion GetRotation() { return rot; }
     public List<AnimationRecord> GetAnimationRecords() { return animationRecords; }
+
+
     
 }
