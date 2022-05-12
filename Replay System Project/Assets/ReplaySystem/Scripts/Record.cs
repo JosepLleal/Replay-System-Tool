@@ -39,11 +39,12 @@ public class Record : MonoBehaviour
         
         if(!record)
         {
-            if(rigidBody != null ) rigidBody.isKinematic = true;
+            //if it is in replay mode, don't use physics
+            if (rigidBody != null ) rigidBody.isKinematic = true;
         }
         else
         {
-            //if it is in replay mode, don't use physics
+            
             if (rigidBody != null) rigidBody.isKinematic = false;
         }
     }

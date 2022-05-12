@@ -187,7 +187,7 @@ public class ReplayManager : MonoBehaviour
     //------------- REPLAY TOOLS -------------------//
 
     // Start replay mode
-    void EnterReplayMode()
+    public void EnterReplayMode()
     {
         isReplayMode = true;
 
@@ -202,7 +202,7 @@ public class ReplayManager : MonoBehaviour
     }
 
     //Exit replay mode
-    void QuitReplayMode()
+    public void QuitReplayMode()
     {
         isReplayMode = false;
 
@@ -216,7 +216,7 @@ public class ReplayManager : MonoBehaviour
     }
 
     //Start replay from begining
-    void RestartReplay()
+    public void RestartReplay()
     {
         frameIndex = 0;
 
@@ -228,7 +228,7 @@ public class ReplayManager : MonoBehaviour
     }
 
     //Pause / Resume function
-    void PauseResume()
+    public void PauseResume()
     {
         if (state == ReplayState.PAUSE)
         {
@@ -244,7 +244,7 @@ public class ReplayManager : MonoBehaviour
     }
 
     //Advances one frame 
-    void GoForward()
+    public void GoForward()
     {
         state = ReplayState.PAUSE;
 
@@ -258,7 +258,7 @@ public class ReplayManager : MonoBehaviour
     }
 
     //Back one frame
-    void GoBack()
+    public void GoBack()
     {
         state = ReplayState.PAUSE;
 
@@ -272,7 +272,7 @@ public class ReplayManager : MonoBehaviour
     }
 
     //Increase replay speed
-    void SpeedUp()
+    public void SpeedUp()
     {
         if(speedIndex < speeds.Length - 1)
             speedIndex++;
@@ -281,7 +281,7 @@ public class ReplayManager : MonoBehaviour
     }
 
     //Decrease replay speed
-    void SpeedDown()
+    public void SpeedDown()
     {
         if (speedIndex > 0)
             speedIndex--;
@@ -290,7 +290,7 @@ public class ReplayManager : MonoBehaviour
     }
 
     //Change to next camera in scene
-    void NextCamera()
+    public void NextCamera()
     {
         for (int i = 0; i < cameras.Length; i++)
         {
@@ -314,7 +314,7 @@ public class ReplayManager : MonoBehaviour
     }
 
     //Change to previous camera in scene
-    void PreviousCamera()
+    public void PreviousCamera()
     {
         for (int i = 0; i < cameras.Length; i++)
         {
