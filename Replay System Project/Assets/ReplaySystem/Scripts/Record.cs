@@ -16,8 +16,9 @@ public class Record : MonoBehaviour
     //Maximum amount of frames that can be stored
     public int maxLength = 1000;
     //when true the gameobject will be recorded
-    public bool record = false;
-    public bool startedRecording = false;
+    private bool record = false;
+    //animator recording
+    private bool startedRecording = false;
 
 
     void Start()
@@ -35,19 +36,11 @@ public class Record : MonoBehaviour
 
     void Update()
     {
+        if (replay != null)
+            record = !replay.ReplayMode();
            
-        if(replay.ReplayMode() == true)
+        if(record)
         {
-            //if it is in replay mode, don't use physics
-            if(rigidBody != null ) 
-                rigidBody.isKinematic = true;
-        }
-        else
-        {
-            
-            if(rigidBody != null) 
-                rigidBody.isKinematic = false;
-
             if (animator != null && startedRecording == false)
             {
                 animator.StartRecording(maxLength);
@@ -74,6 +67,20 @@ public class Record : MonoBehaviour
     public void ClearFrameList()
     {
         frames.Clear();
+    }
+
+    public void SetStartRecording(bool b)
+    {
+        startedRecording = b;
+    }
+
+    //when enter replay mode set to TRUE and when exit set to FALSE
+    public void SetKinematic(bool b)
+    {
+        if(rigidBody != null)
+        {
+            rigidBody.isKinematic = b;
+        }
     }
 
     // GETTERS

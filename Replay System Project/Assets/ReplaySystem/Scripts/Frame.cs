@@ -19,7 +19,4 @@ public class Frame
     public Vector3 GetPosition() { return pos; }
     public Vector3 GetScale() { return scale; }
     public Quaternion GetRotation() { return rot; }
-
-
-    
 }

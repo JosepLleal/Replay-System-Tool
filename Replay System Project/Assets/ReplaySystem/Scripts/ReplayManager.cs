@@ -30,12 +30,12 @@ public class ReplayManager : MonoBehaviour
         Application.targetFrameRate = 60;   
     }
 
-    // Update is called once per frame
+    //Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.R))
         {
-            if(isReplayMode)
+            if (isReplayMode)
             {
                 QuitReplayMode();
             }
@@ -45,15 +45,16 @@ public class ReplayManager : MonoBehaviour
             }
         }
 
-        
-        if(isReplayMode)
-        {       
+
+        if (isReplayMode)
+        {
             // Replay playing 
             if (state == ReplayState.PLAYING)
             {
                 if (frameIndex < recordMaxLength - 1 && frameIndex < records[0].GetLength() - 1)
                 {
                     replayTime += Time.deltaTime;
+                    frameIndex++;
 
                     for (int i = 0; i < records.Count; i++)
                     {
@@ -63,13 +64,13 @@ public class ReplayManager : MonoBehaviour
                             animator.playbackTime = replayTime;
 
                     }
-                    frameIndex++;
+
                 }
-                
+
             }
         }
     }
-    
+
 
     //Add record to records list
     public void AddRecord(Record r)
@@ -108,6 +109,7 @@ public class ReplayManager : MonoBehaviour
         //TODO: instantiate camera prefab
         replayCam = new GameObject("ReplayCamera");
         replayCam.AddComponent<Camera>();
+        replayCam.AddComponent<ReplayCamera>();
 
         cameras = Camera.allCameras;
     }
@@ -133,6 +135,8 @@ public class ReplayManager : MonoBehaviour
         //set gameobjects transforms to starting frame
         for (int i = 0; i < records.Count; i++)
         {
+            records[i].SetKinematic(true);
+
             SetTransforms(records[i], frameIndex);
 
             Animator animator = records[i].GetAnimator();
@@ -145,7 +149,7 @@ public class ReplayManager : MonoBehaviour
                 animator.StartPlayback();
                 animator.playbackTime = replayTime;
             }
-                
+
         }
     }
 
@@ -160,15 +164,17 @@ public class ReplayManager : MonoBehaviour
         for (int i = 0; i < records.Count; i++)
         {
             SetTransforms(records[i], records[i].GetLength() - 1);
+            records[i].SetKinematic(false);
+
             records[i].ClearFrameList();
 
             Animator animator = records[i].GetAnimator();
             if (animator != null)
             {
                 animator.StopPlayback();
-                records[i].startedRecording = false;
+                records[i].SetStartRecording(false);
             }
-                
+
         }
     }
 
@@ -197,14 +203,21 @@ public class ReplayManager : MonoBehaviour
         {
             state = ReplayState.PAUSE;
         }
-            
     }
 
     //Advances one frame 
     public void GoForward()
     {
         state = ReplayState.PAUSE;
-        replayTime += 1f / Application.targetFrameRate;
+        
+
+        if (frameIndex < recordMaxLength - 1) 
+        {
+            frameIndex++;
+            replayTime += 1f / Application.targetFrameRate;
+        }
+        else
+            return;
 
         for (int i = 0; i < records.Count; i++)
         {
@@ -214,16 +227,21 @@ public class ReplayManager : MonoBehaviour
             if (animator != null)
                 animator.playbackTime = replayTime;
         }
-
-        if (frameIndex < recordMaxLength - 1)
-            frameIndex++;
     }
 
     //Back one frame
     public void GoBack()
     {
         state = ReplayState.PAUSE;
-        replayTime -= 1f/Application.targetFrameRate;
+        
+
+        if (frameIndex > 0)
+        {
+            frameIndex--;
+            replayTime -= 1f / Application.targetFrameRate;
+        }
+        else
+            return;
 
         for (int i = 0; i < records.Count; i++)
         {
@@ -234,8 +252,7 @@ public class ReplayManager : MonoBehaviour
                 animator.playbackTime = replayTime;
         }
 
-        if (frameIndex > 0)
-            frameIndex--;
+        
     }
 
     //Increase replay speed
