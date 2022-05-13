@@ -22,15 +22,19 @@ public class ReplayManager : MonoBehaviour
 
     public enum ReplayState { PAUSE, PLAYING, PLAY_REVERSE}
     public ReplayState state = ReplayState.PAUSE;
-    
-    
+
+
+    void Awake()
+    {
+        //recomended FPS
+        Application.targetFrameRate = 60;   
+    }
+
     // Update is called once per frame
     void Update()
     {
         if(Input.GetKeyDown(KeyCode.R))
         {
-           
-
             if(isReplayMode)
             {
                 QuitReplayMode();
@@ -43,8 +47,7 @@ public class ReplayManager : MonoBehaviour
 
         
         if(isReplayMode)
-        {
-                        
+        {       
             // Replay playing 
             if (state == ReplayState.PLAYING)
             {
@@ -52,10 +55,10 @@ public class ReplayManager : MonoBehaviour
                 {
                     replayTime += Time.deltaTime;
 
-                    foreach (Record r in records)
+                    for (int i = 0; i < records.Count; i++)
                     {
-                        SetTransforms(r, frameIndex);
-                        Animator animator = r.GetAnimator();
+                        SetTransforms(records[i], frameIndex);
+                        Animator animator = records[i].GetAnimator();
                         if (animator != null)
                             animator.playbackTime = replayTime;
 
@@ -65,7 +68,6 @@ public class ReplayManager : MonoBehaviour
                 
             }
         }
-
     }
     
 
@@ -125,23 +127,23 @@ public class ReplayManager : MonoBehaviour
 
         //temporary replay camera instantiation
         InstantiateReplayCamera();
+        frameIndex = 0;
         replayTime = 0;
 
         //set gameobjects transforms to starting frame
-        foreach (Record r in records)
+        for (int i = 0; i < records.Count; i++)
         {
-            SetTransforms(r, 0);
+            SetTransforms(records[i], frameIndex);
 
-            Animator animator = r.GetAnimator();
+            Animator animator = records[i].GetAnimator();
             if (animator != null)
             {
                 //stop recording animator
                 animator.StopRecording();
-                r.startedRecording = false;
 
                 //star animator replayMode
                 animator.StartPlayback();
-                animator.playbackTime = 0;
+                animator.playbackTime = replayTime;
             }
                 
         }
@@ -151,17 +153,22 @@ public class ReplayManager : MonoBehaviour
     public void QuitReplayMode()
     {
         isReplayMode = false;
-
+        state = ReplayState.PAUSE;
         DeleteReplayCam();
 
         //set gameobjects transforms back to current state
-        foreach (Record r in records)
+        for (int i = 0; i < records.Count; i++)
         {
-            SetTransforms(r, r.GetLength() - 1);
+            SetTransforms(records[i], records[i].GetLength() - 1);
+            records[i].ClearFrameList();
 
-            Animator animator = r.GetAnimator();
+            Animator animator = records[i].GetAnimator();
             if (animator != null)
+            {
                 animator.StopPlayback();
+                records[i].startedRecording = false;
+            }
+                
         }
     }
 
@@ -171,9 +178,9 @@ public class ReplayManager : MonoBehaviour
         frameIndex = 0;
         replayTime = 0;
 
-        foreach (Record r in records)
+        for (int i = 0; i < records.Count; i++)
         {
-            SetTransforms(r, frameIndex);
+            SetTransforms(records[i], frameIndex);
         }
 
     }
@@ -197,13 +204,13 @@ public class ReplayManager : MonoBehaviour
     public void GoForward()
     {
         state = ReplayState.PAUSE;
-        replayTime += 1 / 60f;
+        replayTime += 1f / Application.targetFrameRate;
 
-        foreach (Record r in records)
+        for (int i = 0; i < records.Count; i++)
         {
-            SetTransforms(r, frameIndex);
+            SetTransforms(records[i], frameIndex);
 
-            Animator animator = r.GetAnimator();
+            Animator animator = records[i].GetAnimator();
             if (animator != null)
                 animator.playbackTime = replayTime;
         }
@@ -216,13 +223,13 @@ public class ReplayManager : MonoBehaviour
     public void GoBack()
     {
         state = ReplayState.PAUSE;
-        replayTime -= 1 / 60f;
+        replayTime -= 1f/Application.targetFrameRate;
 
-        foreach (Record r in records)
+        for (int i = 0; i < records.Count; i++)
         {
-            SetTransforms(r, frameIndex);
+            SetTransforms(records[i], frameIndex);
 
-            Animator animator = r.GetAnimator();
+            Animator animator = records[i].GetAnimator();
             if (animator != null)
                 animator.playbackTime = replayTime;
         }

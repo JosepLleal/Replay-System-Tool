@@ -35,10 +35,8 @@ public class Record : MonoBehaviour
 
     void Update()
     {
-        if(replay != null)
-            record = !replay.ReplayMode();
-        
-        if(!record)
+           
+        if(replay.ReplayMode() == true)
         {
             //if it is in replay mode, don't use physics
             if(rigidBody != null ) 
@@ -50,7 +48,7 @@ public class Record : MonoBehaviour
             if(rigidBody != null) 
                 rigidBody.isKinematic = false;
 
-            if (animator != null && !startedRecording)
+            if (animator != null && startedRecording == false)
             {
                 animator.StartRecording(maxLength);
                 startedRecording = true;
@@ -62,12 +60,6 @@ public class Record : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
-    {
-        
-       
-    }
-
     //Add frame, if list has maxLength remove first element
     void AddFrame(Frame frame)
     {
@@ -77,7 +69,11 @@ public class Record : MonoBehaviour
         }
 
         frames.Add(frame);
+    }
 
+    public void ClearFrameList()
+    {
+        frames.Clear();
     }
 
     // GETTERS
