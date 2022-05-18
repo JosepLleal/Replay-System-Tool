@@ -128,7 +128,7 @@ public class ReplayManager : MonoBehaviour
     {
         Frame f = rec.GetFrameAtIndex(index);
         if (f == null) return;
-
+        
         GameObject go = rec.GetGameObject();
 
         go.transform.position = f.GetPosition();
@@ -196,29 +196,32 @@ public class ReplayManager : MonoBehaviour
     //Exit replay mode
     public void QuitReplayMode()
     {
+        float time = records[0].GetLength() / Application.targetFrameRate;
+        frameIndex = records[0].GetLength() - 1;
+
+        //set gameobjects transforms back to current state
+        for (int i = 0; i < records.Count; i++)
+        {
+            SetTransforms(records[i], frameIndex);
+            records[i].SetKinematic(false);
+            
+            Animator animator = records[i].GetAnimator();
+            if (animator != null)
+            {
+                animator.playbackTime = time;
+                animator.StopPlayback();
+                records[i].SetStartRecording(false);
+            }
+
+            records[i].ClearFrameList();
+        }
+
         isReplayMode = false;
         state = ReplayState.PAUSE;
         DeleteReplayCam();
 
         //Disable UI
         UIvisibility(false);
-
-        //set gameobjects transforms back to current state
-        for (int i = 0; i < records.Count; i++)
-        {
-            SetTransforms(records[i], records[i].GetLength() - 1);
-            records[i].SetKinematic(false);
-
-            records[i].ClearFrameList();
-
-            Animator animator = records[i].GetAnimator();
-            if (animator != null)
-            {
-                animator.StopPlayback();
-                records[i].SetStartRecording(false);
-            }
-
-        }
     }
 
     //Start replay from begining

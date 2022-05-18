@@ -118,12 +118,13 @@ namespace StarterAssets
 
 		private void Update()
 		{
-			if(RM.ReplayMode() == false)
+			GroundedCheck();
+
+			if (RM.ReplayMode() == false)
             {
 				_hasAnimator = TryGetComponent(out _animator);
 
 				JumpAndGravity();
-				GroundedCheck();
 				Move();
 			}
 			

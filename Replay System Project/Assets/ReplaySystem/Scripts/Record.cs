@@ -8,6 +8,9 @@ public class Record : MonoBehaviour
     public ReplayManager replay;
 
     private Rigidbody rigidBody;
+    private Vector3 RBvelocity = Vector3.zero;
+    private Vector3 RBAngVelocity = Vector3.zero;
+
     private Animator animator;
 
     //List of recorded Frames 
@@ -79,6 +82,17 @@ public class Record : MonoBehaviour
     {
         if(rigidBody != null)
         {
+            if(b == true)
+            {
+                RBvelocity = rigidBody.velocity;
+                RBAngVelocity = rigidBody.angularVelocity;
+            }
+            else
+            {
+                rigidBody.velocity = RBvelocity;
+                rigidBody.angularVelocity = RBAngVelocity;
+            }
+
             rigidBody.isKinematic = b;
         }
     }
