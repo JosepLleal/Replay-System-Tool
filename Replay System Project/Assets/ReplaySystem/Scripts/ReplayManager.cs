@@ -1,27 +1,34 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ReplayManager : MonoBehaviour
 {
-
+    //Main system variables
     private List<Record> records = new List<Record>();
-    
     private bool isReplayMode = false;
     private int recordMaxLength = 3600; // 60fps * 60seconds = 3600 frames 
-
     private int frameIndex = 0;
     private float replayTime = 0;
 
-    private float[] speeds = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f};
+    //States
+    public enum ReplayState { PAUSE, PLAYING, PLAY_REVERSE }
+    public ReplayState state = ReplayState.PAUSE;
+
+    //replay speeds
+    private float[] speeds = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f };
     private int speedIndex = 2;
 
+    //UI elements
+    private bool usingSlider = false;
+    public Slider timeLine;
+    public GameObject replayUI;
+
+    //Replay cameras
     private GameObject replayCam;
     private Camera[] cameras;
-    private int cameraIndex = 0;
-
-    public enum ReplayState { PAUSE, PLAYING, PLAY_REVERSE}
-    public ReplayState state = ReplayState.PAUSE;
+    private int cameraIndex = 0;    
 
 
     void Awake()
@@ -45,9 +52,15 @@ public class ReplayManager : MonoBehaviour
             }
         }
 
+       
 
         if (isReplayMode)
         {
+            if(usingSlider == false)
+            {
+                timeLine.value = frameIndex;
+            }         
+
             // Replay playing 
             if (state == ReplayState.PLAYING)
             {
@@ -88,6 +101,26 @@ public class ReplayManager : MonoBehaviour
     public bool ReplayMode()
     {
         return isReplayMode;
+    }
+
+    //Slider event: has been clicked
+    public void SliderClick()
+    {
+        usingSlider = true;
+        
+        if(state == ReplayState.PLAYING)
+            PauseResume();
+    }
+    //Slider event: has been released
+    public void SliderRelease()
+    {
+        //set frame to slider value
+        frameIndex = (int)timeLine.value;
+        //set replay time: time = frame * dT
+        replayTime = frameIndex * (1f / Application.targetFrameRate);
+
+        usingSlider = false;
+        PauseResume();
     }
 
     //set transforms from the frame at record[index]
@@ -132,6 +165,13 @@ public class ReplayManager : MonoBehaviour
         frameIndex = 0;
         replayTime = 0;
 
+        //slider max value
+        timeLine.maxValue = records[0].GetLength();
+        timeLine.value = frameIndex;
+
+        //Enable UI
+        UIvisibility(true);
+
         //set gameobjects transforms to starting frame
         for (int i = 0; i < records.Count; i++)
         {
@@ -159,6 +199,9 @@ public class ReplayManager : MonoBehaviour
         isReplayMode = false;
         state = ReplayState.PAUSE;
         DeleteReplayCam();
+
+        //Disable UI
+        UIvisibility(false);
 
         //set gameobjects transforms back to current state
         for (int i = 0; i < records.Count; i++)
@@ -323,6 +366,11 @@ public class ReplayManager : MonoBehaviour
             cameras[cameraIndex + 1].enabled = false;
             cameras[cameraIndex].enabled = true;
         }
+    }
+
+    public void UIvisibility(bool b)
+    {
+        replayUI.SetActive(b);
     }
 
 }

@@ -131,7 +131,8 @@ namespace StarterAssets
 
 		private void LateUpdate()
 		{
-			CameraRotation();
+			if (RM.ReplayMode() == false)
+				CameraRotation();
 		}
 
 		private void AssignAnimationIDs()
