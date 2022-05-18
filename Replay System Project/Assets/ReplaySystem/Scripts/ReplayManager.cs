@@ -197,12 +197,11 @@ public class ReplayManager : MonoBehaviour
     public void QuitReplayMode()
     {
         float time = records[0].GetLength() / Application.targetFrameRate;
-        frameIndex = records[0].GetLength() - 1;
 
         //set gameobjects transforms back to current state
         for (int i = 0; i < records.Count; i++)
         {
-            SetTransforms(records[i], frameIndex);
+            SetTransforms(records[i], records[i].GetLength() - 1);
             records[i].SetKinematic(false);
             
             Animator animator = records[i].GetAnimator();
@@ -215,13 +214,13 @@ public class ReplayManager : MonoBehaviour
 
             records[i].ClearFrameList();
         }
-
-        isReplayMode = false;
+                
         state = ReplayState.PAUSE;
         DeleteReplayCam();
-
         //Disable UI
         UIvisibility(false);
+
+        isReplayMode = false;
     }
 
     //Start replay from begining
