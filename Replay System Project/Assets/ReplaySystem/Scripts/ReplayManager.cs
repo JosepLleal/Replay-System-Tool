@@ -10,7 +10,6 @@ public class ReplayManager : MonoBehaviour
     private bool isReplayMode = false;
     private int recordMaxLength = 3600; // 60fps * 60seconds = 3600 frames 
     private int frameIndex = 0;
-    private float replayTime = 0;
 
     //States
     public enum ReplayState { PAUSE, PLAYING, PLAY_REVERSE }
@@ -56,17 +55,14 @@ public class ReplayManager : MonoBehaviour
 
         if (isReplayMode)
         {
-            if(usingSlider == false)
-            {
-                timeLine.value = frameIndex;
-            }         
 
             // Replay playing 
-            if (state == ReplayState.PLAYING)
+            if (state == ReplayState.PLAYING && usingSlider == false)
             {
+                timeLine.value = frameIndex;
+
                 if (frameIndex < recordMaxLength - 1 && frameIndex < records[0].GetLength() - 1)
                 {
-                    replayTime += Time.deltaTime;
                     frameIndex++;
 
                     for (int i = 0; i < records.Count; i++)
@@ -74,7 +70,7 @@ public class ReplayManager : MonoBehaviour
                         SetTransforms(records[i], frameIndex);
                         Animator animator = records[i].GetAnimator();
                         if (animator != null)
-                            animator.playbackTime = replayTime;
+                            animator.playbackTime += (animator.recorderStopTime - animator.recorderStartTime)/ (float)records[i].GetLength();
 
                     }
 
@@ -116,8 +112,15 @@ public class ReplayManager : MonoBehaviour
     {
         //set frame to slider value
         frameIndex = (int)timeLine.value;
-        //set replay time: time = frame * dT
-        replayTime = frameIndex * (1f / Application.targetFrameRate);
+
+        for (int i = 0; i < records.Count; i++)
+        {
+            Animator animator = records[i].GetAnimator();
+            //set animations replay time: time = startTime + frame * dT
+            if (animator != null)
+                animator.playbackTime = animator.recorderStartTime + ((animator.recorderStopTime - animator.recorderStartTime) / (float)records[i].GetLength()) * (float)frameIndex;
+
+        }
 
         usingSlider = false;
         PauseResume();
@@ -163,7 +166,6 @@ public class ReplayManager : MonoBehaviour
         //temporary replay camera instantiation
         InstantiateReplayCamera();
         frameIndex = 0;
-        replayTime = 0;
 
         //slider max value
         timeLine.maxValue = records[0].GetLength();
@@ -187,7 +189,7 @@ public class ReplayManager : MonoBehaviour
 
                 //star animator replayMode
                 animator.StartPlayback();
-                animator.playbackTime = replayTime;
+                animator.playbackTime = animator.recorderStartTime;
             }
 
         }
@@ -207,7 +209,7 @@ public class ReplayManager : MonoBehaviour
             Animator animator = records[i].GetAnimator();
             if (animator != null)
             {
-                animator.playbackTime = time;
+                animator.playbackTime = animator.recorderStopTime;
                 animator.StopPlayback();
                 records[i].SetStartRecording(false);
             }
@@ -227,11 +229,16 @@ public class ReplayManager : MonoBehaviour
     public void RestartReplay()
     {
         frameIndex = 0;
-        replayTime = 0;
 
         for (int i = 0; i < records.Count; i++)
         {
             SetTransforms(records[i], frameIndex);
+
+            Animator animator = records[i].GetAnimator();
+            if (animator != null)
+            {
+                animator.playbackTime = animator.recorderStartTime;
+            }
         }
 
     }
@@ -255,23 +262,19 @@ public class ReplayManager : MonoBehaviour
     {
         state = ReplayState.PAUSE;
         
-
         if (frameIndex < recordMaxLength - 1) 
         {
             frameIndex++;
-            replayTime += 1f / Application.targetFrameRate;
-        }
-        else
-            return;
 
-        for (int i = 0; i < records.Count; i++)
-        {
-            SetTransforms(records[i], frameIndex);
+            for (int i = 0; i < records.Count; i++)
+            {
+                SetTransforms(records[i], frameIndex);
 
-            Animator animator = records[i].GetAnimator();
-            if (animator != null)
-                animator.playbackTime = replayTime;
-        }
+                Animator animator = records[i].GetAnimator();
+                if (animator != null)
+                    animator.playbackTime += (animator.recorderStopTime - animator.recorderStartTime) / (float)records[i].GetLength();
+            }
+        }        
     }
 
     //Back one frame
@@ -283,21 +286,16 @@ public class ReplayManager : MonoBehaviour
         if (frameIndex > 0)
         {
             frameIndex--;
-            replayTime -= 1f / Application.targetFrameRate;
-        }
-        else
-            return;
 
-        for (int i = 0; i < records.Count; i++)
-        {
-            SetTransforms(records[i], frameIndex);
+            for (int i = 0; i < records.Count; i++)
+            {
+                SetTransforms(records[i], frameIndex);
 
-            Animator animator = records[i].GetAnimator();
-            if (animator != null)
-                animator.playbackTime = replayTime;
-        }
-
-        
+                Animator animator = records[i].GetAnimator();
+                if (animator != null)
+                    animator.playbackTime -= (animator.recorderStopTime - animator.recorderStartTime) / (float)records[i].GetLength();
+            }
+        } 
     }
 
     //Increase replay speed
