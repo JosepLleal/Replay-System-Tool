@@ -51,8 +51,6 @@ public class ReplayManager : MonoBehaviour
             }
         }
 
-       
-
         if (isReplayMode)
         {
 
@@ -68,9 +66,17 @@ public class ReplayManager : MonoBehaviour
                     for (int i = 0; i < records.Count; i++)
                     {
                         SetTransforms(records[i], frameIndex);
+
                         Animator animator = records[i].GetAnimator();
                         if (animator != null)
                             animator.playbackTime += (animator.recorderStopTime - animator.recorderStartTime)/ (float)records[i].GetLength();
+
+                        AudioSource source = records[i].GetAudio();
+                        if(source != null)
+                        {
+                            if (records[i].GetFrameAtIndex(frameIndex).GetAudioState())
+                                source.Play();
+                        }
 
                     }
 
