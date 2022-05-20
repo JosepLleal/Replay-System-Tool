@@ -21,8 +21,8 @@ public class Record : MonoBehaviour
 
     //AudioSource recording
     private AudioSource audio;
+    private bool audioPlaying = false;
     private bool audioStarted = false;
-    private bool audioData = false;
 
     //Maximum amount of frames that can be stored
     public int maxLength = 1000;
@@ -52,32 +52,36 @@ public class Record : MonoBehaviour
            
         if(record)
         {
+            //record states if we are not in replay mode
+            Frame frame = new Frame(transform.position, transform.rotation, transform.localScale);
+
+            //animations
             if (animator != null && startedRecording == false)
             {
                 animator.StartRecording(maxLength);
                 startedRecording = true;
             }
-
+              
+            //record audio data
             if (audio != null)
             {
-                if(audio.isPlaying && audioStarted == false)
+                if (audio.isPlaying && audioStarted == false)
                 {
                     audioStarted = true;
-                    audioData = true;
+                    audioPlaying = true;
                 }
-                else if(audioStarted && audioData)
+                else if (audioStarted && audioPlaying)
                 {
-                    audioData = false;
+                    audioPlaying = false;
                 }
-                else if(audio.isPlaying == false && audioStarted)
+                else if (audio.isPlaying == false && audioStarted)
                 {
                     audioStarted = false;
                 }
 
+                frame.SetAudioData(new AudioData(audioPlaying, audio.pitch, audio.volume, audio.panStereo, audio.spatialBlend, audio.reverbZoneMix));
             }
 
-            //record states if we are not in replay mode
-            Frame frame = new Frame(transform.position, transform.rotation, transform.localScale, audioData);
             AddFrame(frame);
         }
     }
@@ -110,11 +114,13 @@ public class Record : MonoBehaviour
         {
             if(b == true)
             {
+                //saving speed values of RB
                 RBvelocity = rigidBody.velocity;
                 RBAngVelocity = rigidBody.angularVelocity;
             }
             else
             {
+                //applaying speed values to RB
                 rigidBody.velocity = RBvelocity;
                 rigidBody.angularVelocity = RBAngVelocity;
             }
@@ -144,7 +150,7 @@ public class Record : MonoBehaviour
         return animator;
     }
 
-    public AudioSource GetAudio()
+    public AudioSource GetAudioSource()
     {
         return audio;
     }

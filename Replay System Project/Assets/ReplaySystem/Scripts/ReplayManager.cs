@@ -67,15 +67,20 @@ public class ReplayManager : MonoBehaviour
                     {
                         SetTransforms(records[i], frameIndex);
 
+                        //animations 
                         Animator animator = records[i].GetAnimator();
                         if (animator != null)
                             animator.playbackTime += (animator.recorderStopTime - animator.recorderStartTime)/ (float)records[i].GetLength();
 
-                        AudioSource source = records[i].GetAudio();
-                        if(source != null)
+                        //audios
+                        AudioSource source = records[i].GetAudioSource();
+                        if (source != null)
                         {
-                            if (records[i].GetFrameAtIndex(frameIndex).GetAudioState())
+                            if (records[i].GetFrameAtIndex(frameIndex).GetAudioData().Playing())
                                 source.Play();
+
+                            if (source.isPlaying)
+                                SetAudioProperties(source, records[i].GetFrameAtIndex(frameIndex).GetAudioData());
                         }
 
                     }
@@ -143,6 +148,16 @@ public class ReplayManager : MonoBehaviour
         go.transform.position = f.GetPosition();
         go.transform.rotation = f.GetRotation();
         go.transform.localScale = f.GetScale();
+    }
+
+    //set audio source parameters from audio data
+    void SetAudioProperties(AudioSource source, AudioData data)
+    {
+        source.pitch = data.GetPitch();
+        source.volume = data.GetVolume();
+        source.panStereo = data.GetPanStereo();
+        source.spatialBlend = data.GetSpatialBlend();
+        source.reverbZoneMix = data.GetReverbZoneMix();
     }
 
     //Instantiate temporary camera for replay
