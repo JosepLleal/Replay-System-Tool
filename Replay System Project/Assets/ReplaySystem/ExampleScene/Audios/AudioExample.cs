@@ -6,6 +6,7 @@ public class AudioExample : MonoBehaviour
 {
 
     public AudioSource source;
+    public ParticleSystem particle;
     public ReplayManager replayManager;
 
     // Start is called before the first frame update
@@ -17,9 +18,16 @@ public class AudioExample : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && replayManager.ReplayMode() == false)
+        if (Input.GetKeyDown(KeyCode.F1) && replayManager.ReplayMode() == false)
         {
             source.Play();
+            particle.Play();
+        }
+
+        if (Input.GetKeyDown(KeyCode.F2) && replayManager.ReplayMode() == false)
+        {
+            source.Play();
+            particle.Stop();
         }
     }
 }

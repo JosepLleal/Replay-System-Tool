@@ -38,7 +38,7 @@ public class ReplayCamera : MonoBehaviour
         { // only move while a direction key is pressed
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                totalRun += Time.deltaTime;
+                totalRun += 0.0166f;
                 p = p * totalRun * shiftAdd;
                 p.x = Mathf.Clamp(p.x, -maxShift, maxShift);
                 p.y = Mathf.Clamp(p.y, -maxShift, maxShift);
@@ -50,7 +50,7 @@ public class ReplayCamera : MonoBehaviour
                 p = p * mainSpeed;
             }
 
-            p = p * Time.deltaTime;
+            p = p * 0.0166f;
             Vector3 newPosition = transform.position;
             if (Input.GetKey(KeyCode.Space))
             { //If player wants to move on X and Z axis only

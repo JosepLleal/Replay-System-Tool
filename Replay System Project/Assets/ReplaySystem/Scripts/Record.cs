@@ -21,8 +21,12 @@ public class Record : MonoBehaviour
 
     //AudioSource recording
     private AudioSource audio;
-    private bool audioPlaying = false;
+    private bool audioPlay = false;
     private bool audioStarted = false;
+
+    //Particle system
+    private ParticleSystem particle;
+
 
     //Maximum amount of frames that can be stored
     public int maxLength = 1000;
@@ -36,6 +40,7 @@ public class Record : MonoBehaviour
         rigidBody = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
         audio = GetComponent<AudioSource>();
+        particle = GetComponent<ParticleSystem>(); 
 
         if (replay != null)
         {
@@ -56,32 +61,15 @@ public class Record : MonoBehaviour
             Frame frame = new Frame(transform.position, transform.rotation, transform.localScale);
 
             //animations
-            if (animator != null && startedRecording == false)
-            {
-                animator.StartRecording(maxLength);
-                startedRecording = true;
-            }
-              
+            RecordAnimation();
+
             //record audio data
-            if (audio != null)
-            {
-                if (audio.isPlaying && audioStarted == false)
-                {
-                    audioStarted = true;
-                    audioPlaying = true;
-                }
-                else if (audioStarted && audioPlaying)
-                {
-                    audioPlaying = false;
-                }
-                else if (audio.isPlaying == false && audioStarted)
-                {
-                    audioStarted = false;
-                }
+            RecordAudio(frame);
 
-                frame.SetAudioData(new AudioData(audioPlaying, audio.pitch, audio.volume, audio.panStereo, audio.spatialBlend, audio.reverbZoneMix));
-            }
+            //record particle data
+            RecordParticle(frame);
 
+            //Add new frame to the list
             AddFrame(frame);
         }
     }
@@ -95,6 +83,52 @@ public class Record : MonoBehaviour
         }
 
         frames.Add(frame);
+    }
+
+    //Record Animation
+    void RecordAnimation()
+    {
+        if (animator != null && startedRecording == false)
+        {
+            animator.StartRecording(maxLength);
+            startedRecording = true;
+        }
+    }
+
+    //Record Audio
+    void RecordAudio(Frame frame)
+    {
+        if (audio != null)
+        {
+            if (audio.isPlaying && audioStarted == false)
+            {
+                audioStarted = true;
+                audioPlay = true;
+            }
+            else if (audioStarted && audioPlay)
+            {
+                audioPlay = false;
+            }
+            else if (audio.isPlaying == false && audioStarted)
+            {
+                audioStarted = false;
+            }
+
+            frame.SetAudioData(new AudioData(audioPlay, audio.pitch, audio.volume, audio.panStereo, audio.spatialBlend, audio.reverbZoneMix));
+        }
+    }
+
+    //Record Particle
+    void RecordParticle(Frame frame)
+    {
+        if (particle != null)
+        {
+
+            if(particle.isEmitting)
+                frame.SetParticleData(particle.time);
+            else
+                frame.SetParticleData(0f);
+        }
     }
 
     public void ClearFrameList()
@@ -130,28 +164,15 @@ public class Record : MonoBehaviour
     }
 
     // GETTERS
-    public Frame GetFrameAtIndex(int index)
-    {
-        return index >= frames.Count ? null : frames[index];
-    }
+    public Frame GetFrameAtIndex(int index) { return index >= frames.Count ? null : frames[index]; }
 
-    public GameObject GetGameObject()
-    {
-        return gameObject;
-    }
+    public GameObject GetGameObject() { return gameObject; }
 
-    public int GetLength()
-    {
-        return frames.Count;
-    }
+    public int GetLength() { return frames.Count; }
 
-    public Animator GetAnimator()
-    {
-        return animator;
-    }
+    public Animator GetAnimator() { return animator; }
 
-    public AudioSource GetAudioSource()
-    {
-        return audio;
-    }
+    public AudioSource GetAudioSource() { return audio; }
+
+    public ParticleSystem GetParticle() { return particle; }
 }
