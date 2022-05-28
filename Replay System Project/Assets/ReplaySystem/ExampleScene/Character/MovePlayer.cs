@@ -17,7 +17,15 @@ public class MovePlayer : MonoBehaviour
 
     public ReplayManager replay;
 
+    private void Start()
+    {
+        if (replay == null)
+            replay = GameObject.Find("ReplayManager").GetComponent<ReplayManager>();
 
+        if (cam == null)
+            cam = GameObject.Find("Camera").transform;
+
+    }
     private void Update()
     {
         if (replay.ReplayMode())

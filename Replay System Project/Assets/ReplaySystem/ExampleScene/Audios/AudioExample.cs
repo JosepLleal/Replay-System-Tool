@@ -9,6 +9,8 @@ public class AudioExample : MonoBehaviour
     public ParticleSystem particle;
     public ReplayManager replayManager;
 
+    public GameObject ballPrefab;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -22,6 +24,10 @@ public class AudioExample : MonoBehaviour
         {
             source.Play();
             particle.Play();
+
+            GameObject sphere = Instantiate(ballPrefab);
+            sphere.transform.position = gameObject.transform.position;
+            sphere.GetComponentInChildren<Record>().replay = replayManager;
         }
 
         if (Input.GetKeyDown(KeyCode.F2) && replayManager.ReplayMode() == false)

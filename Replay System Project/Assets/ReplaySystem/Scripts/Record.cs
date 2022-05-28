@@ -20,18 +20,20 @@ public class Record : MonoBehaviour
     private bool startedRecording = false;
 
     //AudioSource recording
-    private AudioSource audio;
+    private AudioSource audioSource;
     private bool audioPlay = false;
     private bool audioStarted = false;
 
-    //Particle system
+    //Particle system recording
     private ParticleSystem particle;
-
 
     //Maximum amount of frames that can be stored
     public int maxLength = 1000;
     //when true the gameobject will be recorded
     private bool record = false;
+
+    //Useful to know if it was instantiated during the recording
+    private int numberFirstFrame;
     
 
 
@@ -39,21 +41,28 @@ public class Record : MonoBehaviour
     {
         rigidBody = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
-        audio = GetComponent<AudioSource>();
+        audioSource = GetComponent<AudioSource>();
         particle = GetComponent<ParticleSystem>(); 
 
         if (replay != null)
         {
             replay.AddRecord(this);
             maxLength = replay.GetMaxLength();
-        }
 
+            //first frame initialization
+            if(replay.records[0].frames.Count < 1)
+                numberFirstFrame = 0;
+            else
+                numberFirstFrame = replay.records[0].frames.Count;
+        }
     }
 
     void Update()
     {
         if (replay != null)
             record = !replay.ReplayMode();
+        else
+            Debug.LogWarning("ReplayManager not found");
            
         if(record)
         {
@@ -98,9 +107,9 @@ public class Record : MonoBehaviour
     //Record Audio
     void RecordAudio(Frame frame)
     {
-        if (audio != null)
+        if (audioSource != null)
         {
-            if (audio.isPlaying && audioStarted == false)
+            if (audioSource.isPlaying && audioStarted == false)
             {
                 audioStarted = true;
                 audioPlay = true;
@@ -109,12 +118,12 @@ public class Record : MonoBehaviour
             {
                 audioPlay = false;
             }
-            else if (audio.isPlaying == false && audioStarted)
+            else if (audioSource.isPlaying == false && audioStarted)
             {
                 audioStarted = false;
             }
 
-            frame.SetAudioData(new AudioData(audioPlay, audio.pitch, audio.volume, audio.panStereo, audio.spatialBlend, audio.reverbZoneMix));
+            frame.SetAudioData(new AudioData(audioPlay, audioSource.pitch, audioSource.volume, audioSource.panStereo, audioSource.spatialBlend, audioSource.reverbZoneMix));
         }
     }
 
@@ -134,6 +143,7 @@ public class Record : MonoBehaviour
     public void ClearFrameList()
     {
         frames.Clear();
+        numberFirstFrame = 0;
     }
 
     public void SetStartRecording(bool b)
@@ -166,13 +176,15 @@ public class Record : MonoBehaviour
     // GETTERS
     public Frame GetFrameAtIndex(int index) { return index >= frames.Count ? null : frames[index]; }
 
+    public int GetFirstFrameIndex() { return numberFirstFrame; }
+
     public GameObject GetGameObject() { return gameObject; }
 
     public int GetLength() { return frames.Count; }
 
     public Animator GetAnimator() { return animator; }
 
-    public AudioSource GetAudioSource() { return audio; }
+    public AudioSource GetAudioSource() { return audioSource; }
 
     public ParticleSystem GetParticle() { return particle; }
 }

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class ReplayManager : MonoBehaviour
 {
     //Main system variables
-    private List<Record> records = new List<Record>();
+    public List<Record> records = new List<Record>();
     private bool isReplayMode = false;
     private int recordMaxLength = 3600; // 60fps * 60seconds = 3600 frames 
     private int frameIndex = 0;
@@ -29,13 +29,6 @@ public class ReplayManager : MonoBehaviour
     private Camera[] cameras;
     private int cameraIndex = 0;    
 
-
-    void Awake()
-    {
-        //recomended FPS
-        Application.targetFrameRate = 60;   
-    }
-
     //Update is called once per frame
     void Update()
     {
@@ -53,7 +46,6 @@ public class ReplayManager : MonoBehaviour
 
         if (isReplayMode)
         {
-
             // Replay playing 
             if (state == ReplayState.PLAYING && usingSlider == false)
             {
@@ -63,39 +55,51 @@ public class ReplayManager : MonoBehaviour
                 {
                     for (int i = 0; i < records.Count; i++)
                     {
-                        SetTransforms(records[i], frameIndex);
+                        //Check for instantiated GO
+                        HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
+                        int auxIndex = frameIndex - records[i].GetFirstFrameIndex();
 
-                        //animations 
-                        Animator animator = records[i].GetAnimator();
-                        if (animator != null)
-                            animator.playbackTime += (animator.recorderStopTime - animator.recorderStartTime) / (float)records[i].GetLength();
-
-                        //audios
-                        AudioSource source = records[i].GetAudioSource();
-                        if (source != null)
+                        if (auxIndex >= 0)
                         {
-                            if (records[i].GetFrameAtIndex(frameIndex).GetAudioData().Playing())
-                                source.Play();
+                            //transforms
+                            SetTransforms(records[i], auxIndex);
 
-                            if (source.isPlaying)
-                                SetAudioProperties(source, records[i].GetFrameAtIndex(frameIndex).GetAudioData());
+                            //animations 
+                            Animator animator = records[i].GetAnimator();
+                            if (animator != null)
+                            {
+                                float time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetLength();
+
+                                if (time > animator.recorderStopTime)
+                                    time = animator.recorderStopTime;
+
+                                animator.playbackTime += time;
+                            }
+
+                            //audios
+                            AudioSource source = records[i].GetAudioSource();
+                            if (source != null)
+                            {
+                                if (records[i].GetFrameAtIndex(auxIndex).GetAudioData().Playing())
+                                    source.Play();
+
+                                if (source.isPlaying)
+                                    SetAudioProperties(source, records[i].GetFrameAtIndex(auxIndex).GetAudioData());
+                            }
+
+                            //particles
+                            ParticleSystem particle = records[i].GetParticle();
+                            if (particle != null)
+                            {
+                                if (records[i].GetFrameAtIndex(auxIndex).ParticleTime() != 0f && particle.isPlaying == false)
+                                    particle.Play();
+
+                                if (records[i].GetFrameAtIndex(auxIndex).ParticleTime() == 0 && particle.isPlaying)
+                                    particle.Stop();
+                            }
                         }
-
-                        //particles
-                        ParticleSystem particle = records[i].GetParticle();
-                        if (particle != null)
-                        {
-                            if (records[i].GetFrameAtIndex(frameIndex).ParticleTime() != 0f && particle.isPlaying == false)
-                                particle.Play();
-
-                            if (records[i].GetFrameAtIndex(frameIndex).ParticleTime() == 0 && particle.isPlaying)
-                                particle.Stop();
-                        }
-
                     }
-
                     frameIndex++;
-
                 }
                 else
                     PauseResume();
@@ -103,6 +107,32 @@ public class ReplayManager : MonoBehaviour
         }
     }
 
+    //This function is responsible for activating and deactivating instantiated GO, dependenig on the current time of the replay 
+    void HandleInstantiatedObjects(Record rec, int index)
+    {
+        GameObject go = rec.GetGameObject();
+
+        //it has not been instantiated yet
+        if (index < 0)
+        {
+            go.SetActive(false);
+        }
+        else
+        {
+            if (go.activeInHierarchy == false)
+            {
+                go.SetActive(true);
+
+                Animator animator = rec.GetAnimator();
+                if (animator != null)
+                {
+                    //start animator replayMode
+                    animator.StartPlayback();
+                    animator.playbackTime = animator.recorderStartTime;
+                }
+            }
+        }
+    }
 
     //Add record to records list
     public void AddRecord(Record r)
@@ -122,57 +152,13 @@ public class ReplayManager : MonoBehaviour
         return isReplayMode;
     }
 
-    //Slider event: has been clicked
-    public void SliderClick()
-    {
-        usingSlider = true;
-    }
-
-    //Slider event: has been released
-    public void SliderRelease()
-    {
-        //set frame to slider value
-        frameIndex = (int)timeLine.value;
-
-        for (int i = 0; i < records.Count; i++)
-        {
-
-            SetTransforms(records[i], frameIndex);
-
-            Animator animator = records[i].GetAnimator();
-            //set animations replay time: time = startTime + frame * dT
-            if (animator != null)
-                animator.playbackTime = animator.recorderStartTime + ((animator.recorderStopTime - animator.recorderStartTime) / (float)records[i].GetLength()) * (float)frameIndex;
-
-            ParticleSystem part = records[i].GetParticle();
-            if (part != null)
-            {
-                if (part.isPlaying)
-                {
-                    part.Stop();
-                    part.Clear();
-                }
-
-                if (records[i].GetFrameAtIndex(frameIndex).ParticleTime() != 0f)
-                {
-                    part.Simulate(records[i].GetFrameAtIndex(frameIndex).ParticleTime());
-                    part.Play();
-                }
-                    
-            }
-
-        }
-
-        usingSlider = false;
-    }
-
     //set transforms from the frame at record[index]
     void SetTransforms(Record rec, int index)
     {
+        GameObject go = rec.GetGameObject();
+
         Frame f = rec.GetFrameAtIndex(index);
         if (f == null) return;
-        
-        GameObject go = rec.GetGameObject();
 
         go.transform.position = f.GetPosition();
         go.transform.rotation = f.GetRotation();
@@ -192,7 +178,6 @@ public class ReplayManager : MonoBehaviour
     //Instantiate temporary camera for replay
     void InstantiateReplayCamera()
     {
-        //TODO: instantiate camera prefab
         replayCam = new GameObject("ReplayCamera");
         replayCam.AddComponent<Camera>();
         replayCam.AddComponent<ReplayCamera>();
@@ -205,6 +190,74 @@ public class ReplayManager : MonoBehaviour
     {
         Destroy(replayCam);
     }
+
+    //Slider event: has been clicked
+    public void SliderClick()
+    {
+        usingSlider = true;
+    }
+
+    //Slider event: has been released
+    public void SliderRelease()
+    {
+        //set frame to slider value
+        frameIndex = (int)timeLine.value;
+
+        for (int i = 0; i < records.Count; i++)
+        {
+            //Check for instantiated GO
+            HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
+            int auxIndex = frameIndex - records[i].GetFirstFrameIndex();
+
+            if (auxIndex >= 0)
+            {
+                SetTransforms(records[i], auxIndex);
+
+                Animator animator = records[i].GetAnimator();
+                //set animations replay time: time = startTime + frame * dT
+                if (animator != null) 
+                {
+
+                    float time = animator.recorderStartTime + (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetLength() * auxIndex;
+
+                    if (time > animator.recorderStopTime)
+                        time = animator.recorderStopTime;
+
+                    animator.playbackTime = time;
+                }
+                    
+                //Audios
+                AudioSource source = records[i].GetAudioSource();
+                if (source != null)
+                {
+                    if (records[i].GetFrameAtIndex(auxIndex).GetAudioData().Playing())
+                        source.Play();
+
+                    if (source.isPlaying)
+                        SetAudioProperties(source, records[i].GetFrameAtIndex(auxIndex).GetAudioData());
+                }
+
+                //Particles
+                ParticleSystem part = records[i].GetParticle();
+                if (part != null)
+                {
+                    if (part.isPlaying)
+                    {
+                        part.Stop();
+                        part.Clear();
+                    }
+
+                    if (records[i].GetFrameAtIndex(auxIndex).ParticleTime() != 0f)
+                    {
+                        part.Simulate(records[i].GetFrameAtIndex(auxIndex).ParticleTime());
+                        part.Play();
+                    }
+                }
+            }
+        }
+
+        usingSlider = false;
+    }    
 
     //------------- REPLAY TOOLS -------------------//
 
@@ -232,20 +285,22 @@ public class ReplayManager : MonoBehaviour
         for (int i = 0; i < records.Count; i++)
         {
             records[i].SetKinematic(true);
-
+            
             SetTransforms(records[i], frameIndex);
 
+            //animations
             Animator animator = records[i].GetAnimator();
             if (animator != null)
             {
                 //stop recording animator
                 animator.StopRecording();
 
-                //star animator replayMode
+                //start animator replayMode
                 animator.StartPlayback();
                 animator.playbackTime = animator.recorderStartTime;
             }
 
+            //particles
             ParticleSystem part = records[i].GetParticle();
             if(part != null)
             {
@@ -262,21 +317,24 @@ public class ReplayManager : MonoBehaviour
                 }
             }
 
+            //Check for instantiated GO
+            HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
         }
     }
 
     //Exit replay mode
     public void QuitReplayMode()
     {
-        
-        float time = records[0].GetLength() / Application.targetFrameRate;
-
         //set gameobjects transforms back to current state
         for (int i = 0; i < records.Count; i++)
         {
+            //Check for instantiated GO
+            HandleInstantiatedObjects(records[i], records[i].GetLength() - 1 - records[i].GetFirstFrameIndex());
+
             SetTransforms(records[i], records[i].GetLength() - 1);
             records[i].SetKinematic(false);
             
+            //reset animations
             Animator animator = records[i].GetAnimator();
             if (animator != null)
             {
@@ -285,6 +343,7 @@ public class ReplayManager : MonoBehaviour
                 records[i].SetStartRecording(false);
             }
 
+            //reset particles
             ParticleSystem part = records[i].GetParticle();
             if (part != null)
             {
@@ -300,7 +359,6 @@ public class ReplayManager : MonoBehaviour
                     part.Play();
                 }
             }
-
             records[i].ClearFrameList();
         }
                 
@@ -323,14 +381,19 @@ public class ReplayManager : MonoBehaviour
 
         for (int i = 0; i < records.Count; i++)
         {
+            //Check for instantiated GO
+            HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
+
             SetTransforms(records[i], frameIndex);
 
+            //animations
             Animator animator = records[i].GetAnimator();
             if (animator != null)
             {
                 animator.playbackTime = animator.recorderStartTime;
             }
 
+            //particles
             ParticleSystem part = records[i].GetParticle();
             if (part != null)
             {
@@ -347,7 +410,6 @@ public class ReplayManager : MonoBehaviour
                 }
             }
         }
-
     }
 
     //Pause / Resume function
@@ -376,22 +438,38 @@ public class ReplayManager : MonoBehaviour
 
             for (int i = 0; i < records.Count; i++)
             {
-                SetTransforms(records[i], frameIndex);
+                //Check for instantiated GO
+                HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
+                int auxIndex = frameIndex - records[i].GetFirstFrameIndex();
 
-                Animator animator = records[i].GetAnimator();
-                if (animator != null)
-                    animator.playbackTime += (animator.recorderStopTime - animator.recorderStartTime) / (float)records[i].GetLength();
-
-                ParticleSystem part = records[i].GetParticle();
-                if (part != null)
+                if(auxIndex >= 0)
                 {
-                    
-                    if (records[i].GetFrameAtIndex(frameIndex).ParticleTime() != 0f)
+                    SetTransforms(records[i], auxIndex);
+
+                    //animations
+                    Animator animator = records[i].GetAnimator();
+                    if (animator != null)
                     {
-                        part.Simulate(records[i].GetFrameAtIndex(frameIndex).ParticleTime());
-                        part.Play();
+                        float time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetLength();
+
+                        if (time > animator.recorderStopTime)
+                            time = animator.recorderStopTime;
+
+                        animator.playbackTime += time;
                     }
 
+                    //particles
+                    ParticleSystem part = records[i].GetParticle();
+                    if (part != null)
+                    {
+
+                        if (records[i].GetFrameAtIndex(auxIndex).ParticleTime() != 0f)
+                        {
+                            part.Simulate(records[i].GetFrameAtIndex(auxIndex).ParticleTime());
+                            part.Play();
+                        }
+
+                    }
                 }
             }
         }        
@@ -402,29 +480,36 @@ public class ReplayManager : MonoBehaviour
     {
         state = ReplayState.PAUSE;
         
-
         if (frameIndex > 0)
         {
             frameIndex--;
 
             for (int i = 0; i < records.Count; i++)
             {
-                SetTransforms(records[i], frameIndex);
+                //Check for instantiated GO
+                HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
+                int auxIndex = frameIndex - records[i].GetFirstFrameIndex();
 
-                Animator animator = records[i].GetAnimator();
-                if (animator != null)
-                    animator.playbackTime -= (animator.recorderStopTime - animator.recorderStartTime) / (float)records[i].GetLength();
-
-                ParticleSystem part = records[i].GetParticle();
-                if (part != null)
+                if(auxIndex >= 0)
                 {
-                    
-                    if (records[i].GetFrameAtIndex(frameIndex).ParticleTime() != 0f)
-                    {
-                        part.Simulate(records[i].GetFrameAtIndex(frameIndex).ParticleTime());
-                        part.Play();
-                    }
+                    SetTransforms(records[i], auxIndex);
 
+                    //animations
+                    Animator animator = records[i].GetAnimator();
+                    if (animator != null)
+                        animator.playbackTime -= (animator.recorderStopTime - animator.recorderStartTime) / (float)records[i].GetLength();
+
+                    //particles
+                    ParticleSystem part = records[i].GetParticle();
+                    if (part != null)
+                    {
+
+                        if (records[i].GetFrameAtIndex(auxIndex).ParticleTime() != 0f)
+                        {
+                            part.Simulate(records[i].GetFrameAtIndex(auxIndex).ParticleTime());
+                            part.Play();
+                        }
+                    }
                 }
             }
         } 
@@ -437,7 +522,6 @@ public class ReplayManager : MonoBehaviour
             speedIndex++;
 
         //TODO: figure out how to treat speed variations
-
         //Time.timeScale = speeds[speedIndex];
     }
 
@@ -448,7 +532,6 @@ public class ReplayManager : MonoBehaviour
             speedIndex--;
 
         //TODO: figure out how to treat speed variations
-
         //Time.timeScale = speeds[speedIndex];
     }
 
@@ -504,5 +587,4 @@ public class ReplayManager : MonoBehaviour
     {
         replayUI.SetActive(b);
     }
-
 }
