@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Record : MonoBehaviour
 {
-
     public ReplayManager replay;
 
     //List of recorded Frames 
@@ -34,6 +33,12 @@ public class Record : MonoBehaviour
 
     //Useful to know if it was instantiated during the recording
     private int numberFirstFrame;
+
+    //Record Deleted while recording
+    // if not deleted it will remain -1, if deleted it will take the frame where it was deleted
+    private int recordDeletedFrame = -1;
+    //deleted go
+    private GameObject deletedGO;
     
 
 
@@ -50,10 +55,10 @@ public class Record : MonoBehaviour
             maxLength = replay.GetMaxLength();
 
             //first frame initialization
-            if(replay.records[0].frames.Count < 1)
+            if(replay.GetReplayLength() < 1)
                 numberFirstFrame = 0;
             else
-                numberFirstFrame = replay.records[0].frames.Count;
+                numberFirstFrame = replay.GetReplayLength();
         }
     }
 
@@ -173,18 +178,19 @@ public class Record : MonoBehaviour
         }
     }
 
-    // GETTERS
-    public Frame GetFrameAtIndex(int index) { return index >= frames.Count ? null : frames[index]; }
+    public void SetDeletedGameObject(GameObject go) { deletedGO = go; }
+    public void SetRecordDeletedFrame(int frame) { recordDeletedFrame = frame; }
 
+    // GETTERS
+    public int GetLength() { return frames.Count; }
+    public Frame GetFrameAtIndex(int index) { return index >= frames.Count ? null : frames[index]; }
     public int GetFirstFrameIndex() { return numberFirstFrame; }
+    public int GetRecordDeletedFrame() { return recordDeletedFrame; }
 
     public GameObject GetGameObject() { return gameObject; }
-
-    public int GetLength() { return frames.Count; }
+    public GameObject GetDeletedGO() { return deletedGO; }
 
     public Animator GetAnimator() { return animator; }
-
     public AudioSource GetAudioSource() { return audioSource; }
-
     public ParticleSystem GetParticle() { return particle; }
 }

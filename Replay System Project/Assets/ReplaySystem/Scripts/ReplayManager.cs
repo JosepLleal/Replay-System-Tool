@@ -27,7 +27,16 @@ public class ReplayManager : MonoBehaviour
     //Replay cameras
     private GameObject replayCam;
     private Camera[] cameras;
-    private int cameraIndex = 0;    
+    private int cameraIndex = 0;
+
+    //Deleted gameobjects pool
+    private List<GameObject> DeletedPool = new List<GameObject>();
+
+    private void Awake()
+    {
+        //needed to have a consistent frame rate
+        Application.targetFrameRate = 60;
+    }
 
     //Update is called once per frame
     void Update()
@@ -51,15 +60,17 @@ public class ReplayManager : MonoBehaviour
             {
                 timeLine.value = frameIndex;
 
-                if (frameIndex < recordMaxLength - 1 && frameIndex < records[0].GetLength() - 1)
+                if (frameIndex < recordMaxLength - 1 && frameIndex < timeLine.maxValue - 1)
                 {
                     for (int i = 0; i < records.Count; i++)
                     {
-                        //Check for instantiated GO
+                        //Check for instantiated and deleted GOs
+                        HandleDeletedObjects(records[i], frameIndex);
                         HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
                         int auxIndex = frameIndex - records[i].GetFirstFrameIndex();
 
-                        if (auxIndex >= 0)
+                        //if record exists at frameIndex moment
+                        if (auxIndex >= 0 && IsRecordActiveInReplay(records[i], frameIndex))
                         {
                             //transforms
                             SetTransforms(records[i], auxIndex);
@@ -110,19 +121,67 @@ public class ReplayManager : MonoBehaviour
     //This function is responsible for activating and deactivating instantiated GO, dependenig on the current time of the replay 
     void HandleInstantiatedObjects(Record rec, int index)
     {
-        GameObject go = rec.GetGameObject();
+        //get hierarchy highest parent
+        GameObject go = rec.GetGameObject().transform.root.gameObject;
 
-        //it has not been instantiated yet
+        //it has not been instantiated
         if (index < 0)
         {
             go.SetActive(false);
         }
         else
         {
+            //instantiate 
             if (go.activeInHierarchy == false)
             {
-                go.SetActive(true);
+                //if it hasn't been deleted during recording
+                if(rec.GetRecordDeletedFrame() == -1)
+                {
+                    go.SetActive(true);
 
+                    Animator animator = rec.GetAnimator();
+                    if (animator != null)
+                    {
+                        //start animator replayMode
+                        animator.StartPlayback();
+                        animator.playbackTime = animator.recorderStartTime;
+                    }
+                }
+                else
+                {
+                    //if it hasn't already been deleted, but it will
+                    if(frameIndex < rec.GetRecordDeletedFrame())
+                    {
+                        go.SetActive(true);
+
+                        Animator animator = rec.GetAnimator();
+                        if (animator != null)
+                        {
+                            //start animator replayMode
+                            animator.StartPlayback();
+                            animator.playbackTime = animator.recorderStartTime;
+                        }
+                    }
+                }
+                
+            }
+        }
+    }
+
+    //Function to activate and deactivate GameObjects that were deleted during the recording phase to simulate the deletion of them
+    void HandleDeletedObjects(Record rec, int index)
+    {
+        //it has not been deleted
+        if (rec.GetRecordDeletedFrame() == -1)
+            return;
+
+        //if it is not deleted yet based on index
+        if (index < rec.GetRecordDeletedFrame())
+        {
+            //if it has not been instantiated activate gameobject
+            if (rec.GetDeletedGO().activeInHierarchy == false && rec.GetFirstFrameIndex() == 0)
+            {
+                rec.GetDeletedGO().SetActive(true);
                 Animator animator = rec.GetAnimator();
                 if (animator != null)
                 {
@@ -131,6 +190,95 @@ public class ReplayManager : MonoBehaviour
                     animator.playbackTime = animator.recorderStartTime;
                 }
             }
+                
+        }
+        else //it has been deleted based on index so gameobject setActive to false
+        {
+            if (rec.GetDeletedGO().activeInHierarchy == true)
+                rec.GetDeletedGO().SetActive(false);
+        }
+    }
+
+    bool IsRecordActiveInReplay(Record rec, int index)
+    {
+        bool ret = false;
+
+        int instantiatedFrame = rec.GetFirstFrameIndex();
+        int deletedFrame = rec.GetRecordDeletedFrame();
+
+        //it has not been instantiated neither deleted
+        if(instantiatedFrame == 0 && deletedFrame == -1)
+        {
+            ret = true;
+        }
+        //it has been instantiated and deleted
+        else if(instantiatedFrame != 0 && deletedFrame != -1)
+        {
+            if(index > instantiatedFrame && index < deletedFrame)
+                ret = true;
+        }
+        //it has been only instantiated
+        else if(instantiatedFrame != 0)
+        {
+            if (index > instantiatedFrame)
+                ret = true;
+        }
+        //it has been only deleted
+        else if (deletedFrame != -1)
+        {
+            if (index < deletedFrame)
+                ret = true;
+        }
+
+        return ret;
+    }
+
+    //Custom function to delete gameobjects that are recorded.
+    //Really important to use this function if the deleted go is using a record component
+    public void DestroyRecordedGO(GameObject obj)
+    {
+        DeletedPool.Add(obj);
+        obj.SetActive(false);
+
+        Record r = obj.GetComponent<Record>();
+        if (r != null)
+        {
+            r.SetRecordDeletedFrame(GetReplayLength() - 1);
+            r.SetDeletedGameObject(obj);
+        }
+
+        SetDeleteChildrenRecords(obj, obj);         
+    }
+
+
+    private void SetDeleteChildrenRecords(GameObject deletedGO, GameObject obj)
+    {
+        for (int i = 0; i < obj.transform.childCount; i++)
+        {
+            GameObject child = obj.transform.GetChild(i).gameObject;
+
+            Record r = child.GetComponent<Record>();
+            if(r != null)
+            {
+                r.SetRecordDeletedFrame(GetReplayLength() - 1);
+                r.SetDeletedGameObject(deletedGO);
+            }               
+
+            SetDeleteChildrenRecords(deletedGO, child);
+        }
+    }
+
+    //function to remove all the deleted records from the list of records
+    private void RemoveRecordsFromList(GameObject obj)
+    {
+        for (int i = 0; i < obj.transform.childCount; i++)
+        {
+            GameObject child = obj.transform.GetChild(i).gameObject;
+            Record r = child.GetComponent<Record>();
+            if(r != null)
+                records.Remove(r);
+
+            RemoveRecordsFromList(child);
         }
     }
 
@@ -144,6 +292,18 @@ public class ReplayManager : MonoBehaviour
     public int GetMaxLength() 
     {
         return recordMaxLength;
+    }
+
+    //Actual replay length
+    public int GetReplayLength()
+    {
+        int value = 0;
+
+        for (int i = 0; i < records.Count; i++)
+            if (records[i].GetLength() > value)
+                value = records[i].GetLength();
+
+        return value;
     }
 
     //Return if in replayMode or not
@@ -205,11 +365,12 @@ public class ReplayManager : MonoBehaviour
 
         for (int i = 0; i < records.Count; i++)
         {
-            //Check for instantiated GO
+            //Check for instantiated and deleted GO
+            HandleDeletedObjects(records[i], frameIndex);
             HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
             int auxIndex = frameIndex - records[i].GetFirstFrameIndex();
 
-            if (auxIndex >= 0)
+            if (auxIndex >= 0 && IsRecordActiveInReplay(records[i], frameIndex))
             {
                 SetTransforms(records[i], auxIndex);
 
@@ -259,6 +420,8 @@ public class ReplayManager : MonoBehaviour
         usingSlider = false;
     }    
 
+   
+
     //------------- REPLAY TOOLS -------------------//
 
     // Start replay mode
@@ -272,7 +435,7 @@ public class ReplayManager : MonoBehaviour
         frameIndex = 0;
 
         //slider max value
-        timeLine.maxValue = records[0].GetLength();
+        timeLine.maxValue = GetReplayLength();
         timeLine.value = frameIndex;
 
         //Enable UI
@@ -285,7 +448,7 @@ public class ReplayManager : MonoBehaviour
         for (int i = 0; i < records.Count; i++)
         {
             records[i].SetKinematic(true);
-            
+
             SetTransforms(records[i], frameIndex);
 
             //animations
@@ -317,8 +480,9 @@ public class ReplayManager : MonoBehaviour
                 }
             }
 
-            //Check for instantiated GO
+            //Check for instantiated and deleted GO
             HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
+            HandleDeletedObjects(records[i], frameIndex);
         }
     }
 
@@ -328,38 +492,53 @@ public class ReplayManager : MonoBehaviour
         //set gameobjects transforms back to current state
         for (int i = 0; i < records.Count; i++)
         {
-            //Check for instantiated GO
-            HandleInstantiatedObjects(records[i], records[i].GetLength() - 1 - records[i].GetFirstFrameIndex());
+            //if it hasn't been deleted during recording
+            if(records[i].GetRecordDeletedFrame() == -1)
+            {
+                //Check for instantiated GO
+                HandleInstantiatedObjects(records[i], records[i].GetLength() - 1);
 
-            SetTransforms(records[i], records[i].GetLength() - 1);
-            records[i].SetKinematic(false);
+                SetTransforms(records[i], records[i].GetLength() - 1);
+                records[i].SetKinematic(false);
+
+                //reset animations
+                Animator animator = records[i].GetAnimator();
+                if (animator != null)
+                {
+                    animator.playbackTime = animator.recorderStopTime;
+                    animator.StopPlayback();
+                    records[i].SetStartRecording(false);
+                }
+
+                //reset particles
+                ParticleSystem part = records[i].GetParticle();
+                if (part != null)
+                {
+                    if (part.isPlaying)
+                    {
+                        part.Stop();
+                        part.Clear();
+                    }
+
+                    if (records[i].GetFrameAtIndex(records[i].GetLength() - 1).ParticleTime() != 0f)
+                    {
+                        part.Simulate(records[i].GetFrameAtIndex(records[i].GetLength() - 1).ParticleTime());
+                        part.Play();
+                    }
+                }
+                records[i].ClearFrameList();
+            }
+            else
+            {
+                //destroy deleted gameobject
+                foreach (GameObject go in DeletedPool)
+                {
+                    RemoveRecordsFromList(go);
+                    Destroy(go);
+                }
+                DeletedPool.Clear();
+            }
             
-            //reset animations
-            Animator animator = records[i].GetAnimator();
-            if (animator != null)
-            {
-                animator.playbackTime = animator.recorderStopTime;
-                animator.StopPlayback();
-                records[i].SetStartRecording(false);
-            }
-
-            //reset particles
-            ParticleSystem part = records[i].GetParticle();
-            if (part != null)
-            {
-                if (part.isPlaying)
-                {
-                    part.Stop();
-                    part.Clear();
-                }
-
-                if (records[i].GetFrameAtIndex(records[i].GetLength() - 1).ParticleTime() != 0f)
-                {
-                    part.Simulate(records[i].GetFrameAtIndex(records[i].GetLength() - 1).ParticleTime());
-                    part.Play();
-                }
-            }
-            records[i].ClearFrameList();
         }
                 
         state = ReplayState.PAUSE;
@@ -381,7 +560,8 @@ public class ReplayManager : MonoBehaviour
 
         for (int i = 0; i < records.Count; i++)
         {
-            //Check for instantiated GO
+            //Check for instantiated and deleted GO
+            HandleDeletedObjects(records[i], frameIndex);
             HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
 
             SetTransforms(records[i], frameIndex);
@@ -438,11 +618,12 @@ public class ReplayManager : MonoBehaviour
 
             for (int i = 0; i < records.Count; i++)
             {
-                //Check for instantiated GO
+                //Check for instantiated and deleted GO
+                HandleDeletedObjects(records[i], frameIndex);
                 HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
                 int auxIndex = frameIndex - records[i].GetFirstFrameIndex();
 
-                if(auxIndex >= 0)
+                if(auxIndex >= 0 && IsRecordActiveInReplay(records[i], frameIndex))
                 {
                     SetTransforms(records[i], auxIndex);
 
@@ -486,11 +667,12 @@ public class ReplayManager : MonoBehaviour
 
             for (int i = 0; i < records.Count; i++)
             {
-                //Check for instantiated GO
+                //Check for instantiated and deleted GO
+                HandleDeletedObjects(records[i], frameIndex);
                 HandleInstantiatedObjects(records[i], frameIndex - records[i].GetFirstFrameIndex());
                 int auxIndex = frameIndex - records[i].GetFirstFrameIndex();
 
-                if(auxIndex >= 0)
+                if(auxIndex >= 0 && IsRecordActiveInReplay(records[i], frameIndex))
                 {
                     SetTransforms(records[i], auxIndex);
 

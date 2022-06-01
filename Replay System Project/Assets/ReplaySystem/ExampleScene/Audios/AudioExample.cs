@@ -11,6 +11,8 @@ public class AudioExample : MonoBehaviour
 
     public GameObject ballPrefab;
 
+    GameObject sphere;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -25,7 +27,7 @@ public class AudioExample : MonoBehaviour
             source.Play();
             particle.Play();
 
-            GameObject sphere = Instantiate(ballPrefab);
+            sphere = Instantiate(ballPrefab);
             sphere.transform.position = gameObject.transform.position;
             sphere.GetComponentInChildren<Record>().replay = replayManager;
         }
@@ -34,6 +36,11 @@ public class AudioExample : MonoBehaviour
         {
             source.Play();
             particle.Stop();
+        }
+
+        if (Input.GetKeyDown(KeyCode.F3) && replayManager.ReplayMode() == false && sphere != null)
+        {
+            replayManager.DestroyRecordedGO(sphere);
         }
     }
 }
