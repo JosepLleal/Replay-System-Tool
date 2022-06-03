@@ -5,6 +5,8 @@ using UnityEngine;
 public class Record : MonoBehaviour
 {
     public ReplayManager replay;
+    //Replaymanager name in Scene
+    public string replayManagerName = "ReplayManager";
 
     //List of recorded Frames 
     private List<Frame> frames = new List<Frame>();
@@ -33,6 +35,7 @@ public class Record : MonoBehaviour
 
     //Useful to know if it was instantiated during the recording
     private int numberFirstFrame;
+    private bool instantiated = false;
 
     //Record Deleted while recording
     // if not deleted it will remain -1, if deleted it will take the frame where it was deleted
@@ -44,6 +47,11 @@ public class Record : MonoBehaviour
 
     void Start()
     {
+        //make sure replay is not NULL
+        if(replay == null)
+            replay = GameObject.Find(replayManagerName).GetComponent<ReplayManager>();
+
+        //Get components
         rigidBody = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
@@ -55,19 +63,18 @@ public class Record : MonoBehaviour
             maxLength = replay.GetMaxLength();
 
             //first frame initialization
-            if(replay.GetReplayLength() < 1)
-                numberFirstFrame = 0;
-            else
-                numberFirstFrame = replay.GetReplayLength();
+            numberFirstFrame = replay.GetReplayLength();
+            //look if it is an instantiated go
+            if(numberFirstFrame != 0) instantiated = true;
         }
+        else
+            Debug.LogWarning("ReplayManager not found, make sure there is a replayManger in the scene. Make sure to assign it by drag and drop or by puting the correct replayManagerName");
     }
 
     void Update()
     {
         if (replay != null)
             record = !replay.ReplayMode();
-        else
-            Debug.LogWarning("ReplayManager not found");
            
         if(record)
         {
@@ -85,7 +92,8 @@ public class Record : MonoBehaviour
 
             //Add new frame to the list
             AddFrame(frame);
-        }
+                
+        }     
     }
 
     //Add frame, if list has maxLength remove first element
@@ -145,12 +153,15 @@ public class Record : MonoBehaviour
         }
     }
 
+    //Prepare to record again
     public void ClearFrameList()
     {
         frames.Clear();
         numberFirstFrame = 0;
+        instantiated = false;
     }
 
+    //used for the animator recording
     public void SetStartRecording(bool b)
     {
         startedRecording = b;
@@ -178,18 +189,50 @@ public class Record : MonoBehaviour
         }
     }
 
+    //rearrange instantiation and deletion frames
+    public void UpdateFramesNum()
+    {
+        if (replay.GetReplayLength() == maxLength)
+        {
+            //instantiated record
+            if (numberFirstFrame > 0)
+                numberFirstFrame--;
+            
+            //deleted record
+            if (recordDeletedFrame != -1 && recordDeletedFrame > 0)
+            {
+                recordDeletedFrame--;
+
+                //delete frames that are out of the replay
+                if(instantiated == false || (instantiated == true && numberFirstFrame == 0))
+                    frames.RemoveAt(0);
+            }
+        }
+    }
+
+    //SETTERS
     public void SetDeletedGameObject(GameObject go) { deletedGO = go; }
     public void SetRecordDeletedFrame(int frame) { recordDeletedFrame = frame; }
 
     // GETTERS
     public int GetLength() { return frames.Count; }
-    public Frame GetFrameAtIndex(int index) { return index >= frames.Count ? null : frames[index]; }
+    public Frame GetFrameAtIndex(int index) 
+    {
+        if (index < 0) return null;
+
+        return index >= frames.Count ? null : frames[index]; 
+    }
+
+    //instantiation and deletion
     public int GetFirstFrameIndex() { return numberFirstFrame; }
+    public bool IsInstantiated() { return instantiated; }
     public int GetRecordDeletedFrame() { return recordDeletedFrame; }
 
+    //records Go and deleted GO
     public GameObject GetGameObject() { return gameObject; }
     public GameObject GetDeletedGO() { return deletedGO; }
 
+    // other recorded components
     public Animator GetAnimator() { return animator; }
     public AudioSource GetAudioSource() { return audioSource; }
     public ParticleSystem GetParticle() { return particle; }

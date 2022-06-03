@@ -13,34 +13,27 @@ public class AudioExample : MonoBehaviour
 
     GameObject sphere;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    double timer = 0;
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F1) && replayManager.ReplayMode() == false)
+        if(replayManager.ReplayMode() == false)
         {
-            source.Play();
-            particle.Play();
+            timer += Time.deltaTime;
 
-            sphere = Instantiate(ballPrefab);
-            sphere.transform.position = gameObject.transform.position;
-            sphere.GetComponentInChildren<Record>().replay = replayManager;
-        }
+            if (timer >= 10.0f)
+            {
+                source.Play();
+                particle.Play();
 
-        if (Input.GetKeyDown(KeyCode.F2) && replayManager.ReplayMode() == false)
-        {
-            source.Play();
-            particle.Stop();
-        }
+                if (sphere != null)
+                    replayManager.DestroyRecordedGO(sphere);
 
-        if (Input.GetKeyDown(KeyCode.F3) && replayManager.ReplayMode() == false && sphere != null)
-        {
-            replayManager.DestroyRecordedGO(sphere);
+                sphere = Instantiate(ballPrefab);
+                sphere.transform.position = gameObject.transform.position;
+                timer = 0;
+            }
         }
     }
 }
