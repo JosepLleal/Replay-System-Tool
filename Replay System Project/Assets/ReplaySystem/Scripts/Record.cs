@@ -40,7 +40,7 @@ public class Record : MonoBehaviour
     //Record Deleted while recording
     // if not deleted it will remain -1, if deleted it will take the frame where it was deleted
     private int recordDeletedFrame = -1;
-    //deleted go
+    //deleted go 
     private GameObject deletedGO;
     
 
@@ -73,9 +73,11 @@ public class Record : MonoBehaviour
 
     void Update()
     {
+        //if the game is paused or you want to record with a certain condition put it here
         if (replay != null)
             record = !replay.ReplayMode();
            
+        // RECORD
         if(record)
         {
             //record states if we are not in replay mode
@@ -145,7 +147,6 @@ public class Record : MonoBehaviour
     {
         if (particle != null)
         {
-
             if(particle.isEmitting)
                 frame.SetParticleData(particle.time);
             else
@@ -205,7 +206,8 @@ public class Record : MonoBehaviour
 
                 //delete frames that are out of the replay
                 if(instantiated == false || (instantiated == true && numberFirstFrame == 0))
-                    frames.RemoveAt(0);
+                    if(frames.Count > 0)
+                        frames.RemoveAt(0);
             }
         }
     }

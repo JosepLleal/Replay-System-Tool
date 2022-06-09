@@ -28,6 +28,7 @@ public class Frame
     {
         audio = data;
     }
+
     //particle set data
     public void SetParticleData(float time)
     {

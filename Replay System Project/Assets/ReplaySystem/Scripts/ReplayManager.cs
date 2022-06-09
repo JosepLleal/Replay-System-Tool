@@ -576,7 +576,7 @@ public class ReplayManager : MonoBehaviour
         }
         DeletedPool.Clear();
 
-        state = ReplayState.PAUSE;
+
         DeleteReplayCam();
         //Disable UI
         UIvisibility(false);
@@ -651,6 +651,7 @@ public class ReplayManager : MonoBehaviour
     public void GoForward()
     {
         state = ReplayState.PAUSE;
+        Time.timeScale = 0;
         
         if (frameIndex < recordMaxLength - 1) 
         {
@@ -684,7 +685,6 @@ public class ReplayManager : MonoBehaviour
                     ParticleSystem part = records[i].GetParticle();
                     if (part != null)
                     {
-
                         if (records[i].GetFrameAtIndex(auxIndex).ParticleTime() != 0f)
                         {
                             part.Simulate(records[i].GetFrameAtIndex(auxIndex).ParticleTime());
@@ -694,14 +694,15 @@ public class ReplayManager : MonoBehaviour
                     }
                 }
             }
-        }        
+        }
     }
 
     //Back one frame
     public void GoBack()
     {
         state = ReplayState.PAUSE;
-        
+        Time.timeScale = 0;
+
         if (frameIndex > 0)
         {
             frameIndex--;
@@ -736,7 +737,7 @@ public class ReplayManager : MonoBehaviour
                     }
                 }
             }
-        } 
+        }
     }
 
     //Increase replay speed
