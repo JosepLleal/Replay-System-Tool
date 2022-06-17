@@ -4,9 +4,14 @@ using UnityEngine;
 
 public class Record : MonoBehaviour
 {
+    [Header("ReplayManager")]
+    [Tooltip("Drag and drop the Replay Manager of the scene here, not necessary if you put below the ReplayManager name.")]
     public ReplayManager replay;
+
+    [Header("Replay Manager name in the scene")]
+    [Tooltip("Insted of drag and dropping you can place the name of the ReplayManager here.")]
     //Replaymanager name in Scene
-    public string replayManagerName = "ReplayManager";
+    [SerializeField]string replayManagerName = "ReplayManager";
 
     //List of recorded Frames 
     private List<Frame> frames = new List<Frame>();
@@ -29,7 +34,7 @@ public class Record : MonoBehaviour
     private ParticleSystem particle;
 
     //Maximum amount of frames that can be stored
-    public int maxLength = 1000;
+    private int maxLength = 3600;
     //when true the gameobject will be recorded
     private bool record = false;
 
@@ -63,7 +68,7 @@ public class Record : MonoBehaviour
             maxLength = replay.GetMaxLength();
 
             //first frame initialization
-            numberFirstFrame = replay.GetReplayLength();
+            numberFirstFrame = replay.GetReplayLength()-1;
             //look if it is an instantiated go
             if(numberFirstFrame != 0) instantiated = true;
         }

@@ -4,15 +4,19 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class ReplayManager : MonoBehaviour
-{
+{    
+    public enum ReplayState { PAUSE, PLAYING, PLAY_REVERSE }
+
     //Main system variables
+    [HideInInspector]
     public List<Record> records = new List<Record>();
     private bool isReplayMode = false;
-    private int recordMaxLength = 3600; // 60fps * 60seconds = 3600 frames 
+    [Header("Maximum frames recorded")]
+    [SerializeField]private int recordMaxLength = 3600; // 60fps * 60seconds = 3600 frames 
     private int frameIndex = 0;
 
     //States
-    public enum ReplayState { PAUSE, PLAYING, PLAY_REVERSE }
+    [HideInInspector]
     public ReplayState state = ReplayState.PAUSE;
 
     //replay speeds
@@ -21,8 +25,9 @@ public class ReplayManager : MonoBehaviour
 
     //UI elements
     private bool usingSlider = false;
+    [Header("Replay System UI")]
     public Slider timeLine;
-    public GameObject replayUI;
+    public GameObject replayBoxUI;
 
     //Replay cameras
     private GameObject replayCam;
@@ -811,6 +816,6 @@ public class ReplayManager : MonoBehaviour
     // visibility UI of replay
     public void UIvisibility(bool b)
     {
-        replayUI.SetActive(b);
+        replayBoxUI.SetActive(b);
     }
 }
