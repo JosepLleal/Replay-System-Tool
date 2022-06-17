@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class ReplayManager : MonoBehaviour
 {    
-    public enum ReplayState { PAUSE, PLAYING, PLAY_REVERSE }
+    public enum ReplayState { PAUSE, PLAYING}
 
     //Main system variables
     [HideInInspector]
@@ -13,7 +13,16 @@ public class ReplayManager : MonoBehaviour
     private bool isReplayMode = false;
     [Header("Maximum frames recorded")]
     [SerializeField]private int recordMaxLength = 3600; // 60fps * 60seconds = 3600 frames 
+
+
+    [Header("Optimization frame interpolation")]
+    [SerializeField] private bool interpolation = false;
+    private float recordTimer = 0;
+    [Tooltip("Time between recorded frames")]
+    [SerializeField] private float recordInterval = 0.2f;
+
     private int frameIndex = 0;
+    private float replayTimer = 0;
 
     //States
     [HideInInspector]
@@ -39,13 +48,22 @@ public class ReplayManager : MonoBehaviour
 
     private void Awake()
     {
-        //needed to have a consistent frame rate
+        //needs to have a consistent frame rate,
+        //if the frameRate is increased to 144 f.e., the replay would last a maximum of 69 seconds.
+        //This is due to how the unity's internal animator recorder works, as it can only record up to 10000 frames, no more.
+        //At 60fps the replay can reach up to 166 seconds.
         Application.targetFrameRate = 60;
+    }
+
+    private void Start()
+    {
+        recordTimer = recordInterval;
     }
 
     //Update is called once per frame
     void Update()
     {
+        //Enter and exit replay mode
         if (Input.GetKeyDown(KeyCode.R))
         {
             if (isReplayMode)
@@ -79,13 +97,26 @@ public class ReplayManager : MonoBehaviour
                         if (IsRecordActiveInReplay(records[i], frameIndex))
                         {
                             //transforms
-                            SetTransforms(records[i], auxIndex);
+                            if(interpolation)
+                            {
+                                float value = replayTimer / recordInterval;
+                                InterpolateTransforms(records[i], auxIndex, value);
+                            }
+                            else
+                                SetTransforms(records[i], auxIndex);
 
                             //animations 
                             Animator animator = records[i].GetAnimator();
                             if (animator != null)
                             {
-                                float time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetLength();
+
+                                float time = 0; 
+                                float length = records[i].GetLength() * (recordInterval / Time.deltaTime);
+
+                                if (interpolation)
+                                    time = (animator.recorderStopTime - animator.recorderStartTime) / length;
+                                else
+                                    time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetLength();
 
                                 if (time > animator.recorderStopTime)
                                     time = animator.recorderStopTime;
@@ -97,7 +128,7 @@ public class ReplayManager : MonoBehaviour
                             AudioSource source = records[i].GetAudioSource();
                             if (source != null)
                             {
-                                if (records[i].GetFrameAtIndex(auxIndex).GetAudioData().Playing())
+                                if (records[i].GetFrameAtIndex(auxIndex).GetAudioData().Playing() && source.isPlaying == false)
                                     source.Play();
 
                                 if (source.isPlaying)
@@ -116,8 +147,24 @@ public class ReplayManager : MonoBehaviour
                             }
                         }
                     }
-                    //advance frame
-                    frameIndex++;
+
+                    if(interpolation)
+                    { 
+                        replayTimer += Time.deltaTime;
+
+                        if(replayTimer >= recordInterval)
+                        {
+
+
+
+                            replayTimer = 0;
+                            frameIndex++;
+                        }
+                    }
+                    else
+                    {
+                        frameIndex++;
+                    }    
                 }
                 else
                     PauseResume();
@@ -125,6 +172,29 @@ public class ReplayManager : MonoBehaviour
         }
         else //game is recording
         {
+            //Record records 
+            if (interpolation)
+            {
+                recordTimer += Time.deltaTime;
+
+                if(recordTimer >= recordInterval)
+                {
+                    for (int i = 0; i < records.Count; i++)
+                    {
+                        records[i].RecordFrame();
+                    }
+
+                    recordTimer = 0;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < records.Count; i++)
+                {
+                    records[i].RecordFrame();
+                }
+            }
+
             for (int i = 0; i < records.Count; i++)
             {
                 //the deletion of the record is already out of the replay
@@ -269,7 +339,7 @@ public class ReplayManager : MonoBehaviour
 
 
     //Custom function to delete gameobjects that are recorded.
-    //REALLY IMPORTANT to use this function if the deleted go is using a record component
+    //REALLY IMPORTANT to use this function if the deleted GO is using a record component
     public void DestroyRecordedGO(GameObject obj)
     {
         DeletedPool.Add(obj);
@@ -360,6 +430,19 @@ public class ReplayManager : MonoBehaviour
         go.transform.position = f.GetPosition();
         go.transform.rotation = f.GetRotation();
         go.transform.localScale = f.GetScale();
+    }
+
+    void InterpolateTransforms(Record rec, int index, float value)
+    {
+        GameObject go = rec.GetGameObject();
+
+        Frame actual = rec.GetFrameAtIndex(index);
+        Frame next = rec.GetFrameAtIndex(index+1);
+        if (actual == null || next == null) return;
+
+        go.transform.position = Vector3.Lerp(actual.GetPosition(), next.GetPosition(), value);
+        go.transform.rotation = Quaternion.Lerp(actual.GetRotation(), next.GetRotation(), value);
+        go.transform.localScale = Vector3.Lerp(actual.GetScale(), next.GetScale(), value);
     }
 
     //set audio source parameters from audio data

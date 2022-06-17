@@ -76,31 +76,35 @@ public class Record : MonoBehaviour
             Debug.LogWarning("ReplayManager not found, make sure there is a replayManger in the scene. Make sure to assign it by drag and drop or by puting the correct replayManagerName");
     }
 
-    void Update()
-    {
-        //if the game is paused or you want to record with a certain condition put it here
-        if (replay != null)
-            record = !replay.ReplayMode();
+    //void Update()
+    //{
+    //    //if the game is paused or you want to record with a certain condition put it here
+    //    if (replay != null)
+    //        record = !replay.ReplayMode();
            
-        // RECORD
-        if(record)
-        {
-            //record states if we are not in replay mode
-            Frame frame = new Frame(transform.position, transform.rotation, transform.localScale);
+    //    // RECORD
+    //    if(record)
+    //    {
+    //        RecordFrame();
+    //    }     
+    //}
 
-            //animations
-            RecordAnimation();
+    public void RecordFrame()
+    {
+        //record states if we are not in replay mode
+        Frame frame = new Frame(transform.position, transform.rotation, transform.localScale);
 
-            //record audio data
-            RecordAudio(frame);
+        //animations
+        RecordAnimation();
 
-            //record particle data
-            RecordParticle(frame);
+        //record audio data
+        RecordAudio(frame);
 
-            //Add new frame to the list
-            AddFrame(frame);
-                
-        }     
+        //record particle data
+        RecordParticle(frame);
+
+        //Add new frame to the list
+        AddFrame(frame);
     }
 
     //Add frame, if list has maxLength remove first element
