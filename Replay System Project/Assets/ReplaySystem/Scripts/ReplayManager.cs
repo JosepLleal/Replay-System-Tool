@@ -13,6 +13,7 @@ public class ReplayManager : MonoBehaviour
     private bool isReplayMode = false;
     [Header("Maximum frames recorded")]
     [SerializeField]private int recordMaxLength = 3600; // 60fps * 60seconds = 3600 frames 
+    private int maximumLength = 0;
 
 
     [Header("Optimization frame interpolation")]
@@ -57,7 +58,15 @@ public class ReplayManager : MonoBehaviour
 
     private void Start()
     {
-        recordTimer = recordInterval;
+        recordTimer = Application.targetFrameRate * recordInterval;
+
+        if(interpolation)
+        {
+            maximumLength = (int)(10000f / (Application.targetFrameRate * recordInterval));
+            if (recordMaxLength > maximumLength)
+                recordMaxLength = maximumLength;
+        }
+        
     }
 
     //Update is called once per frame
@@ -99,7 +108,8 @@ public class ReplayManager : MonoBehaviour
                             //transforms
                             if(interpolation)
                             {
-                                float value = replayTimer / recordInterval;
+                                float max = Application.targetFrameRate * recordInterval;
+                                float value = replayTimer / max;
                                 InterpolateTransforms(records[i], auxIndex, value);
                             }
                             else
@@ -109,19 +119,13 @@ public class ReplayManager : MonoBehaviour
                             Animator animator = records[i].GetAnimator();
                             if (animator != null)
                             {
-
-                                float time = 0; 
-                                float length = records[i].GetLength() * (recordInterval / Time.deltaTime);
+                                float time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetLength();
 
                                 if (interpolation)
-                                    time = (animator.recorderStopTime - animator.recorderStartTime) / length;
-                                else
-                                    time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetLength();
+                                    time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetAnimFramesRecorded();
 
-                                if (time > animator.recorderStopTime)
-                                    time = animator.recorderStopTime;
-
-                                animator.playbackTime += time;
+                                if (animator.playbackTime + time <= animator.recorderStopTime)
+                                    animator.playbackTime += time;
                             }
 
                             //audios
@@ -150,13 +154,10 @@ public class ReplayManager : MonoBehaviour
 
                     if(interpolation)
                     { 
-                        replayTimer += Time.deltaTime;
+                        replayTimer ++;
 
-                        if(replayTimer >= recordInterval)
+                        if(replayTimer >= Application.targetFrameRate * recordInterval)
                         {
-
-
-
                             replayTimer = 0;
                             frameIndex++;
                         }
@@ -172,12 +173,13 @@ public class ReplayManager : MonoBehaviour
         }
         else //game is recording
         {
+            //Here you can put a condition to record whenever you want
             //Record records 
             if (interpolation)
             {
-                recordTimer += Time.deltaTime;
+                recordTimer ++;
 
-                if(recordTimer >= recordInterval)
+                if (recordTimer >= Application.targetFrameRate * recordInterval)
                 {
                     for (int i = 0; i < records.Count; i++)
                     {
@@ -194,6 +196,8 @@ public class ReplayManager : MonoBehaviour
                     records[i].RecordFrame();
                 }
             }
+
+
 
             for (int i = 0; i < records.Count; i++)
             {
@@ -213,6 +217,9 @@ public class ReplayManager : MonoBehaviour
 
                 //update instantiation and deletion frames
                 records[i].UpdateFramesNum();
+
+                //Update recorded frames of animators, to know how many animator frames were recorded
+                records[i].IncreaseRecordedAnimatorFrames();
             }
                 
         }
@@ -399,6 +406,15 @@ public class ReplayManager : MonoBehaviour
     public int GetMaxLength() 
     {
         return recordMaxLength;
+    }
+
+    public int GetAnimatorReccordLength()
+    {
+        int ret = recordMaxLength;
+
+        if (interpolation)
+            ret = recordMaxLength * Application.targetFrameRate * (int)recordInterval;
+            return ret;
     }
 
     //Actual replay length
@@ -663,7 +679,6 @@ public class ReplayManager : MonoBehaviour
             Destroy(go);
         }
         DeletedPool.Clear();
-
 
         DeleteReplayCam();
         //Disable UI

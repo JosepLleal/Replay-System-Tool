@@ -24,6 +24,7 @@ public class Record : MonoBehaviour
     //animator recording
     private Animator animator;
     private bool startedRecording = false;
+    private int animFramesRecorded = 0;
 
     //AudioSource recording
     private AudioSource audioSource;
@@ -32,11 +33,6 @@ public class Record : MonoBehaviour
 
     //Particle system recording
     private ParticleSystem particle;
-
-    //Maximum amount of frames that can be stored
-    private int maxLength = 3600;
-    //when true the gameobject will be recorded
-    private bool record = false;
 
     //Useful to know if it was instantiated during the recording
     private int numberFirstFrame;
@@ -65,29 +61,16 @@ public class Record : MonoBehaviour
         if (replay != null)
         {
             replay.AddRecord(this);
-            maxLength = replay.GetMaxLength();
 
-            //first frame initialization
+            //first frame initialization, useful to know the frame where an instantiated go was spawned
             numberFirstFrame = replay.GetReplayLength()-1;
+
             //look if it is an instantiated go
             if(numberFirstFrame != 0) instantiated = true;
         }
         else
             Debug.LogWarning("ReplayManager not found, make sure there is a replayManger in the scene. Make sure to assign it by drag and drop or by puting the correct replayManagerName");
     }
-
-    //void Update()
-    //{
-    //    //if the game is paused or you want to record with a certain condition put it here
-    //    if (replay != null)
-    //        record = !replay.ReplayMode();
-           
-    //    // RECORD
-    //    if(record)
-    //    {
-    //        RecordFrame();
-    //    }     
-    //}
 
     public void RecordFrame()
     {
@@ -110,7 +93,7 @@ public class Record : MonoBehaviour
     //Add frame, if list has maxLength remove first element
     void AddFrame(Frame frame)
     {
-        if(GetLength() >= maxLength)
+        if(GetLength() >= replay.GetMaxLength())
         {
             frames.RemoveAt(0);
         }
@@ -123,7 +106,7 @@ public class Record : MonoBehaviour
     {
         if (animator != null && startedRecording == false)
         {
-            animator.StartRecording(maxLength);
+            animator.StartRecording(replay.GetAnimatorReccordLength());
             startedRecording = true;
         }
     }
@@ -167,6 +150,7 @@ public class Record : MonoBehaviour
     public void ClearFrameList()
     {
         frames.Clear();
+        animFramesRecorded = 0;
         numberFirstFrame = 0;
         instantiated = false;
     }
@@ -202,7 +186,7 @@ public class Record : MonoBehaviour
     //rearrange instantiation and deletion frames
     public void UpdateFramesNum()
     {
-        if (replay.GetReplayLength() == maxLength)
+        if (replay.GetReplayLength() == replay.GetMaxLength())
         {
             //instantiated record
             if (numberFirstFrame > 0)
@@ -225,6 +209,8 @@ public class Record : MonoBehaviour
     public void SetDeletedGameObject(GameObject go) { deletedGO = go; }
     public void SetRecordDeletedFrame(int frame) { recordDeletedFrame = frame; }
 
+    public void IncreaseRecordedAnimatorFrames() { animFramesRecorded++; }
+
     // GETTERS
     public int GetLength() { return frames.Count; }
     public Frame GetFrameAtIndex(int index) 
@@ -245,6 +231,7 @@ public class Record : MonoBehaviour
 
     // other recorded components
     public Animator GetAnimator() { return animator; }
+    public int GetAnimFramesRecorded() { return animFramesRecorded; }
     public AudioSource GetAudioSource() { return audioSource; }
     public ParticleSystem GetParticle() { return particle; }
 }
