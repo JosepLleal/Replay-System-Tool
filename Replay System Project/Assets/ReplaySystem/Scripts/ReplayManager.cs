@@ -32,6 +32,7 @@ public class ReplayManager : MonoBehaviour
     //replay speeds
     private float[] speeds = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f };
     private int speedIndex = 2;
+    private float slowMotionTimer = 0;
 
     //UI elements
     private bool usingSlider = false;
@@ -113,7 +114,19 @@ public class ReplayManager : MonoBehaviour
                                 InterpolateTransforms(records[i], auxIndex, value);
                             }
                             else
-                                SetTransforms(records[i], auxIndex);
+                            {
+                                //not slowmotion
+                                if(speeds[speedIndex] >= 1)
+                                    SetTransforms(records[i], auxIndex);
+                                else
+                                {
+                                    if(slowMotionTimer == 0)
+                                        SetTransforms(records[i], auxIndex);
+                                    else //interpolate slow motion frames
+                                        InterpolateTransforms(records[i], auxIndex, slowMotionTimer);
+                                }
+                            }
+                                
 
                             //animations 
                             Animator animator = records[i].GetAnimator();
@@ -123,6 +136,9 @@ public class ReplayManager : MonoBehaviour
 
                                 if (interpolation)
                                     time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetAnimFramesRecorded();
+
+                                //TEST: Speed of replay
+                                time *= speeds[speedIndex];
 
                                 if (animator.playbackTime + time <= animator.recorderStopTime)
                                     animator.playbackTime += time;
@@ -154,7 +170,7 @@ public class ReplayManager : MonoBehaviour
 
                     if(interpolation)
                     { 
-                        replayTimer ++;
+                        replayTimer += speeds[speedIndex];
 
                         if(replayTimer >= Application.targetFrameRate * recordInterval)
                         {
@@ -164,7 +180,18 @@ public class ReplayManager : MonoBehaviour
                     }
                     else
                     {
-                        frameIndex++;
+                        if(speeds[speedIndex] >= 1)
+                            frameIndex+= (int)speeds[speedIndex];
+                        else
+                        {
+                            slowMotionTimer += speeds[speedIndex];
+
+                            if (slowMotionTimer >= 1f)
+                            {
+                                frameIndex++;
+                                slowMotionTimer = 0;
+                            }
+                        }
                     }    
                 }
                 else
@@ -498,6 +525,7 @@ public class ReplayManager : MonoBehaviour
     {
         //set frame to slider value
         frameIndex = (int)timeLine.value;
+        replayTimer = 0;
 
         for (int i = 0; i < records.Count; i++)
         {
@@ -580,6 +608,7 @@ public class ReplayManager : MonoBehaviour
 
         state = ReplayState.PAUSE;
         Time.timeScale = 0f;
+        speedIndex = 2;
 
         //set gameobjects states to starting frame
         for (int i = 0; i < records.Count; i++)
@@ -758,7 +787,21 @@ public class ReplayManager : MonoBehaviour
         
         if (frameIndex < recordMaxLength - 1) 
         {
-            frameIndex++;
+            if (interpolation)
+            {
+                replayTimer++;
+
+                if (replayTimer >= Application.targetFrameRate * recordInterval)
+                {
+                    replayTimer = 0;
+                    frameIndex++;
+                }
+            }
+            else
+            {
+                frameIndex++;
+            }
+
             timeLine.value = frameIndex;
 
             for (int i = 0; i < records.Count; i++)
@@ -770,7 +813,14 @@ public class ReplayManager : MonoBehaviour
 
                 if(IsRecordActiveInReplay(records[i], frameIndex))
                 {
-                    SetTransforms(records[i], auxIndex);
+                    if(interpolation)
+                    {
+                        float max = Application.targetFrameRate * recordInterval;
+                        float value = replayTimer / max;
+                        InterpolateTransforms(records[i], auxIndex, value);
+                    }
+                    else
+                        SetTransforms(records[i], auxIndex);
 
                     //animations
                     Animator animator = records[i].GetAnimator();
@@ -778,8 +828,8 @@ public class ReplayManager : MonoBehaviour
                     {
                         float time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetLength();
 
-                        if (time > animator.recorderStopTime)
-                            time = animator.recorderStopTime;
+                        if (interpolation)
+                            time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetAnimFramesRecorded();
 
                         animator.playbackTime += time;
                     }
@@ -808,7 +858,22 @@ public class ReplayManager : MonoBehaviour
 
         if (frameIndex > 0)
         {
-            frameIndex--;
+
+            if (interpolation)
+            {
+                replayTimer--;
+
+                if (replayTimer <= 0)
+                {
+                    replayTimer = Application.targetFrameRate * recordInterval;
+                    frameIndex--;
+                }
+            }
+            else
+            {
+                frameIndex--;
+            }
+
             timeLine.value = frameIndex;
 
             for (int i = 0; i < records.Count; i++)
@@ -820,12 +885,27 @@ public class ReplayManager : MonoBehaviour
 
                 if(IsRecordActiveInReplay(records[i], frameIndex))
                 {
-                    SetTransforms(records[i], auxIndex);
+                    if (interpolation)
+                    {
+                        float max = Application.targetFrameRate * recordInterval;
+                        float value = replayTimer / max;
+                        InterpolateTransforms(records[i], auxIndex, value);
+                    }
+                    else
+                        SetTransforms(records[i], auxIndex);
 
                     //animations
                     Animator animator = records[i].GetAnimator();
                     if (animator != null)
-                        animator.playbackTime -= (animator.recorderStopTime - animator.recorderStartTime) / (float)records[i].GetLength();
+                    {
+                        float time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetLength();
+
+                        if (interpolation)
+                            time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetAnimFramesRecorded();
+
+                        animator.playbackTime -= time;
+                    }
+                       
 
                     //particles
                     ParticleSystem part = records[i].GetParticle();
@@ -848,9 +928,7 @@ public class ReplayManager : MonoBehaviour
     {
         if(speedIndex < speeds.Length - 1)
             speedIndex++;
-
-        //TODO: figure out how to treat speed variations
-        //Time.timeScale = speeds[speedIndex];
+        Time.timeScale = speeds[speedIndex];
     }
 
     //Decrease replay speed
@@ -858,9 +936,7 @@ public class ReplayManager : MonoBehaviour
     {
         if (speedIndex > 0)
             speedIndex--;
-
-        //TODO: figure out how to treat speed variations
-        //Time.timeScale = speeds[speedIndex];
+        Time.timeScale = speeds[speedIndex];
     }
 
     //Change to next camera in scene

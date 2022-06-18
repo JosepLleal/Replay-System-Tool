@@ -44,8 +44,6 @@ public class Record : MonoBehaviour
     //deleted go 
     private GameObject deletedGO;
     
-
-
     void Start()
     {
         //make sure replay is not NULL
