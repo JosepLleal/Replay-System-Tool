@@ -61,8 +61,7 @@ public class Record : MonoBehaviour
             replay.AddRecord(this);
 
             //first frame initialization, useful to know the frame where an instantiated go was spawned
-            numberFirstFrame = replay.GetReplayLength()-1;
-
+            numberFirstFrame = replay.GetReplayLength();
             //look if it is an instantiated go
             if(numberFirstFrame != 0) instantiated = true;
         }
@@ -72,10 +71,10 @@ public class Record : MonoBehaviour
 
     public void RecordFrame()
     {
-        //record states if we are not in replay mode
+        //record transforms
         Frame frame = new Frame(transform.position, transform.rotation, transform.localScale);
 
-        //animations
+        //record animations
         RecordAnimation();
 
         //record audio data

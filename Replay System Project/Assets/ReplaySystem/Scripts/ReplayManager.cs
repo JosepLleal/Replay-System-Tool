@@ -15,7 +15,6 @@ public class ReplayManager : MonoBehaviour
     [SerializeField]private int recordMaxLength = 3600; // 60fps * 60seconds = 3600 frames 
     private int maximumLength = 0;
 
-
     [Header("Optimization frame interpolation")]
     [SerializeField] private bool interpolation = false;
     private float recordTimer = 0;
@@ -41,6 +40,7 @@ public class ReplayManager : MonoBehaviour
     public GameObject replayBoxUI;
 
     //Replay cameras
+    private Camera current;
     private GameObject replayCam;
     private Camera[] cameras;
     private int cameraIndex = 0;
@@ -171,8 +171,8 @@ public class ReplayManager : MonoBehaviour
                     if(interpolation)
                     { 
                         replayTimer += speeds[speedIndex];
-
-                        if(replayTimer >= Application.targetFrameRate * recordInterval)
+                        float frames = Application.targetFrameRate * recordInterval;
+                        if (replayTimer >= frames)
                         {
                             replayTimer = 0;
                             frameIndex++;
@@ -229,7 +229,7 @@ public class ReplayManager : MonoBehaviour
             for (int i = 0; i < records.Count; i++)
             {
                 //the deletion of the record is already out of the replay
-                if(records[i].GetRecordDeletedFrame() != -1 && records[i].GetRecordDeletedFrame() == 0)
+                if(records[i].GetRecordDeletedFrame() == 0)
                 {
                     //DELETE GAMEOBJECT
                     GameObject delGO = records[i].GetDeletedGO();
@@ -257,7 +257,7 @@ public class ReplayManager : MonoBehaviour
     //This function is responsible for activating and deactivating instantiated GO, dependenig on the current time of the replay 
     void HandleInstantiatedObjects(Record rec, int index)
     {
-        //get hierarchy highest parent
+        //get hierarchy highest parent, as it will be the instantiated GO
         GameObject go = rec.GetGameObject().transform.root.gameObject;
 
         //it has not been instantiated yet
@@ -312,28 +312,8 @@ public class ReplayManager : MonoBehaviour
         if (rec.GetRecordDeletedFrame() == -1)
             return;
 
-        //if it is not deleted yet based on index
-        if (index < rec.GetRecordDeletedFrame())
-        {
-            //if it has not been instantiated activate gameobject
-            if (rec.GetDeletedGO().activeInHierarchy == false && rec.IsInstantiated() == false)
-            {
-                rec.GetDeletedGO().SetActive(true);
-                Animator animator = rec.GetAnimator();
-                if (animator != null)
-                {
-                    //start animator replayMode
-                    animator.StartPlayback();
-                    animator.playbackTime = animator.recorderStartTime;
-                }
-            }
-
-        }
-        else //it has been deleted based on index so gameobject setActive to false
-        {
-            if (rec.GetDeletedGO().activeInHierarchy == true)
-                rec.GetDeletedGO().SetActive(false);
-        }
+        if (rec.GetDeletedGO().activeInHierarchy == true)
+            rec.GetDeletedGO().SetActive(false);
     }
 
     //Function that checks in the given frame (index), if the record is active
@@ -501,6 +481,7 @@ public class ReplayManager : MonoBehaviour
     //Instantiate temporary camera for replay
     void InstantiateReplayCamera()
     {
+        current = Camera.main;
         replayCam = new GameObject("ReplayCamera");
         replayCam.AddComponent<Camera>();
         replayCam.AddComponent<ReplayCamera>();
@@ -712,6 +693,9 @@ public class ReplayManager : MonoBehaviour
         DeleteReplayCam();
         //Disable UI
         UIvisibility(false);
+
+        //enable gameplay camera
+        current.enabled = true;
 
         isReplayMode = false;
 
