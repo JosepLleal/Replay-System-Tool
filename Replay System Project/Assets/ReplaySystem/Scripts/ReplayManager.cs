@@ -148,11 +148,14 @@ public class ReplayManager : MonoBehaviour
                             AudioSource source = records[i].GetAudioSource();
                             if (source != null)
                             {
-                                if (records[i].GetFrameAtIndex(auxIndex).GetAudioData().Playing() && source.isPlaying == false)
-                                    source.Play();
+                                if(records[i].GetFrameAtIndex(auxIndex) != null)
+                                {
+                                    if (records[i].GetFrameAtIndex(auxIndex).GetAudioData().Playing() && source.isPlaying == false)
+                                        source.Play();
 
-                                if (source.isPlaying)
-                                    SetAudioProperties(source, records[i].GetFrameAtIndex(auxIndex).GetAudioData());
+                                    if (source.isPlaying)
+                                        SetAudioProperties(source, records[i].GetFrameAtIndex(auxIndex).GetAudioData());
+                                }
                             }
 
                             //particles
@@ -515,7 +518,6 @@ public class ReplayManager : MonoBehaviour
             HandleDeletedObjects(records[i], frameIndex);
             HandleInstantiatedObjects(records[i], auxIndex);
             
-
             if (IsRecordActiveInReplay(records[i], frameIndex))
             {
                 SetTransforms(records[i], auxIndex);
@@ -524,7 +526,6 @@ public class ReplayManager : MonoBehaviour
                 //set animations replay time: time = startTime + frame * dT
                 if (animator != null) 
                 {
-
                     float time = animator.recorderStartTime + (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetLength() * auxIndex;
 
                     if (time > animator.recorderStopTime)
@@ -537,11 +538,15 @@ public class ReplayManager : MonoBehaviour
                 AudioSource source = records[i].GetAudioSource();
                 if (source != null)
                 {
-                    if (records[i].GetFrameAtIndex(auxIndex).GetAudioData().Playing())
-                        source.Play();
+                    if(records[i].GetFrameAtIndex(auxIndex) != null)
+                    {
+                        if (records[i].GetFrameAtIndex(auxIndex).GetAudioData().Playing())
+                            source.Play();
 
-                    if (source.isPlaying)
-                        SetAudioProperties(source, records[i].GetFrameAtIndex(auxIndex).GetAudioData());
+                        if (source.isPlaying)
+                            SetAudioProperties(source, records[i].GetFrameAtIndex(auxIndex).GetAudioData());
+                    }
+                    
                 }
 
                 //Particles
@@ -554,11 +559,15 @@ public class ReplayManager : MonoBehaviour
                         part.Clear();
                     }
 
-                    if (records[i].GetFrameAtIndex(auxIndex).ParticleTime() != 0f)
+                    if (records[i].GetFrameAtIndex(auxIndex) != null)
                     {
-                        part.Simulate(records[i].GetFrameAtIndex(auxIndex).ParticleTime());
-                        part.Play();
+                        if (records[i].GetFrameAtIndex(auxIndex).ParticleTime() != 0f)
+                        {
+                            part.Simulate(records[i].GetFrameAtIndex(auxIndex).ParticleTime());
+                            part.Play();
+                        }
                     }
+                    
                 }
             }
         }

@@ -1848,7 +1848,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 601315170}
-  m_LocalRotation: {x: 0.11181805, y: -0.0036697665, z: 0.00033742888, w: 0.9937219}
+  m_LocalRotation: {x: 0.11181805, y: -0.0036697665, z: 0.00033742853, w: 0.9937219}
   m_LocalPosition: {x: -4.53, y: 29.876987, z: 27.356901}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -3718,7 +3718,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 972957152}
-  m_LocalRotation: {x: 0.14772838, y: 1e-45, z: -0, w: 0.989028}
+  m_LocalRotation: {x: 0.1477284, y: 1e-45, z: -0, w: 0.989028}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -21791,6 +21791,10 @@ PrefabInstance:
     - target: {fileID: 2809413419116962253, guid: 2e298f85a08feb54799879133844dcf5, type: 3}
       propertyPath: m_Name
       value: ReplayManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 2809413419116962254, guid: 2e298f85a08feb54799879133844dcf5, type: 3}
+      propertyPath: interpolation
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2809413419116962254, guid: 2e298f85a08feb54799879133844dcf5, type: 3}
       propertyPath: recordMaxLength
