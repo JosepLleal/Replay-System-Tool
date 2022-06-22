@@ -72,14 +72,19 @@ public class ReplayManager : MonoBehaviour
             if (recordMaxLength > maximumLength)
                 recordMaxLength = maximumLength;
         }
+        else
+        {
+            if (recordMaxLength > 10000)
+                recordMaxLength = 10000;
+        }
         
     }
 
     //Update is called once per frame
     void Update()
     {
-       
-        //if(Input.GetKeyDown(KeyCode.T))
+
+        //if (Input.GetKeyDown(KeyCode.T))
         //{
         //    StartTravelBack(5f);
         //}
@@ -88,7 +93,7 @@ public class ReplayManager : MonoBehaviour
         //{
         //    StartTravelBack();
         //}
-        //else if(Input.GetKeyUp(KeyCode.Y))
+        //else if (Input.GetKeyUp(KeyCode.Y))
         //{
         //    ExitTravelBack();
         //}
