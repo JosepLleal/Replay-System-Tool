@@ -6,27 +6,29 @@ using UnityEngine.UI;
 public class ReplayManager : MonoBehaviour
 {    
     public enum ReplayState { PAUSE, PLAYING, TRAVEL_BACK}
+    //States
+    ReplayState state = ReplayState.PAUSE;
 
     //Main system variables
     [HideInInspector]
     public List<Record> records = new List<Record>();
     private bool isReplayMode = false;
+
     [Header("Maximum frames recorded")]
     [SerializeField]private int recordMaxLength = 3600; // 60fps * 60seconds = 3600 frames 
     private int maximumLength = 0;
 
     [Header("Optimization frame interpolation")]
     [SerializeField] private bool interpolation = false;
+    //timer to record with intervals
     private float recordTimer = 0;
     [Tooltip("Time between recorded frames")]
     [SerializeField] private float recordInterval = 0.2f;
 
+    //replay current frame index
     private int frameIndex = 0;
+    //replay timer used for interpolation
     private float replayTimer = 0;
-
-    //States
-    [HideInInspector]
-    public ReplayState state = ReplayState.PAUSE;
 
     //replay speeds
     private float[] speeds = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f };
@@ -39,9 +41,12 @@ public class ReplayManager : MonoBehaviour
     public Slider timeLine;
     public GameObject replayBoxUI;
 
-    //Replay cameras
+    //--------Replay cameras----------------
+    //gameplay camera recorded
     private Camera current;
+    //created replay camera to move freely
     private GameObject replayCam;
+    //array of active cameras in the scene
     private Camera[] cameras;
     private int cameraIndex = 0;
 
@@ -73,23 +78,20 @@ public class ReplayManager : MonoBehaviour
     //Update is called once per frame
     void Update()
     {
-        //Enter and exit replay mode
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            if (isReplayMode)
-            {
-                QuitReplayMode();
-            }
-            else
-            {
-                EnterReplayMode();
-            }
-        }
+       
+        //if(Input.GetKeyDown(KeyCode.T))
+        //{
+        //    StartTravelBack(5f);
+        //}
 
-        if(Input.GetKeyDown(KeyCode.T))
-        {
-            StartTravelBack(5f);
-        }
+        //if (Input.GetKeyDown(KeyCode.Y))
+        //{
+        //    StartTravelBack();
+        //}
+        //else if(Input.GetKeyUp(KeyCode.Y))
+        //{
+        //    ExitTravelBack();
+        //}
 
         if (isReplayMode)
         {
@@ -204,7 +206,15 @@ public class ReplayManager : MonoBehaviour
                 }
                 else
                     PauseResume();
+
+                //Reposition ReplayCamera if the gameplay camera 
+                if(Camera.main == current)
+                {
+                    replayCam.transform.position = current.transform.position;
+                    replayCam.transform.rotation = current.transform.rotation;
+                }
             }
+            //TRAVEL BACK IN TIME FUNCTIONALITY
             else if(state == ReplayState.TRAVEL_BACK)
             {
                 TravelBack();
@@ -524,6 +534,7 @@ public class ReplayManager : MonoBehaviour
     {
         //set frame to slider value
         frameIndex = (int)timeLine.value;
+        Debug.Log((int)timeLine.value);
         replayTimer = 0;
 
         for (int i = 0; i < records.Count; i++)
@@ -1017,11 +1028,41 @@ public class ReplayManager : MonoBehaviour
     //------------------------------------------------------------------------
 
     float timerTravelBack = 0;
+    bool travelBackTime = false;
 
     public void StartTravelBack(float time)
     {
         isReplayMode = true;
         timerTravelBack = time;
+        travelBackTime = true;
+        state = ReplayState.TRAVEL_BACK;
+        speedIndex = 2;
+
+        frameIndex = GetReplayLength();
+        replayTimer = recordTimer;
+
+        for (int i = 0; i < records.Count; i++)
+        {
+            //start playback animations
+            Animator animator = records[i].GetAnimator();
+            if (animator != null)
+            {
+                //stop recording animator
+                animator.StopRecording();
+
+                //start animator replayMode
+                animator.StartPlayback();
+                animator.playbackTime = animator.recorderStopTime;
+            }
+
+            records[i].SetKinematic(true);
+        }
+    }
+
+    public void StartTravelBack()
+    {
+        isReplayMode = true;
+        timerTravelBack = 1f;
         state = ReplayState.TRAVEL_BACK;
         speedIndex = 2;
 
@@ -1112,7 +1153,8 @@ public class ReplayManager : MonoBehaviour
                 }
             }
 
-            timerTravelBack -= Time.deltaTime;
+            if(travelBackTime)
+                timerTravelBack -= Time.deltaTime;
         }
         else
         {
@@ -1169,6 +1211,7 @@ public class ReplayManager : MonoBehaviour
         DeletedPool.Clear();
 
         state = ReplayState.PAUSE;
+        travelBackTime = false;
         isReplayMode = false;
     }
 
