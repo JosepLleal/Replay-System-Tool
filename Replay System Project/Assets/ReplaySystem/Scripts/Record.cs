@@ -18,8 +18,6 @@ public class Record : MonoBehaviour
 
     //RB recording
     private Rigidbody rigidBody;
-    private Vector3 RBvelocity = Vector3.zero;
-    private Vector3 RBAngVelocity = Vector3.zero;
 
     //animator recording
     private Animator animator;
@@ -73,9 +71,12 @@ public class Record : MonoBehaviour
     {
         //record transforms
         Frame frame = new Frame(transform.position, transform.rotation, transform.localScale);
-
+        
         //record animations
         RecordAnimation();
+
+        //record rigidBody velocities
+        RecordRigidBody(frame);
 
         //record audio data
         RecordAudio(frame);
@@ -98,12 +99,19 @@ public class Record : MonoBehaviour
         frames.Add(frame);
     }
 
+    //Record RB velocities
+    void RecordRigidBody(Frame frame)
+    {
+        if (rigidBody != null)
+            frame.SetRBVelocities(rigidBody.velocity, rigidBody.angularVelocity);
+    }
+
     //Record Animation
     void RecordAnimation()
     {
         if (animator != null && startedRecording == false)
         {
-            animator.StartRecording(replay.GetAnimatorReccordLength());
+            animator.StartRecording(replay.GetAnimatorRecordLength());
             startedRecording = true;
         }
     }
@@ -150,6 +158,8 @@ public class Record : MonoBehaviour
         animFramesRecorded = 0;
         numberFirstFrame = 0;
         instantiated = false;
+        deletedGO = null;
+        recordDeletedFrame = -1;
     }
 
     //used for the animator recording
@@ -162,22 +172,7 @@ public class Record : MonoBehaviour
     public void SetKinematic(bool b)
     {
         if(rigidBody != null)
-        {
-            if(b == true)
-            {
-                //saving speed values of RB
-                RBvelocity = rigidBody.velocity;
-                RBAngVelocity = rigidBody.angularVelocity;
-            }
-            else
-            {
-                //applaying speed values to RB
-                rigidBody.velocity = RBvelocity;
-                rigidBody.angularVelocity = RBAngVelocity;
-            }
-
             rigidBody.isKinematic = b;
-        }
     }
 
     //rearrange instantiation and deletion frames
@@ -227,6 +222,7 @@ public class Record : MonoBehaviour
     public GameObject GetDeletedGO() { return deletedGO; }
 
     // other recorded components
+    public Rigidbody GetRigidbody() { return rigidBody; }
     public Animator GetAnimator() { return animator; }
     public int GetAnimFramesRecorded() { return animFramesRecorded; }
     public AudioSource GetAudioSource() { return audioSource; }

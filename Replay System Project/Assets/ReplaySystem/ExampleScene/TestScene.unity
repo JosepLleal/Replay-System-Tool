@@ -223,6 +223,20 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3875640368447535954, guid: 7e061fef33f04b248964cb63c99d3c91, type: 3}
   m_PrefabInstance: {fileID: 3875640369682507387}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &99527772
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 99527769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab7d38d1299d9684497a66e978ef8c27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  replay: {fileID: 409669698}
+  replayManagerName: ReplayManager
 --- !u!1001 &109193639
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1848,7 +1862,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 601315170}
-  m_LocalRotation: {x: 0.11181805, y: -0.0036697665, z: 0.00033742853, w: 0.9937219}
+  m_LocalRotation: {x: 0.11181805, y: -0.0036710992, z: 0.00033755135, w: 0.9937219}
   m_LocalPosition: {x: -4.53, y: 29.876987, z: 27.356901}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -2835,7 +2849,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 829960232}
-  m_LocalRotation: {x: 0.10165937, y: -0.0046991175, z: 0.00048020252, w: 0.9948081}
+  m_LocalRotation: {x: 0.10165937, y: -0.004700824, z: 0.00048037694, w: 0.9948081}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -3718,7 +3732,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 972957152}
-  m_LocalRotation: {x: 0.1477284, y: 1e-45, z: -0, w: 0.989028}
+  m_LocalRotation: {x: 0.14772838, y: 1e-45, z: -0, w: 0.989028}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -21794,7 +21808,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2809413419116962254, guid: 2e298f85a08feb54799879133844dcf5, type: 3}
       propertyPath: interpolation
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2809413419116962254, guid: 2e298f85a08feb54799879133844dcf5, type: 3}
       propertyPath: recordMaxLength

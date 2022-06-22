@@ -8,6 +8,9 @@ public class Frame
     Vector3 pos, scale;
     Quaternion rot;
 
+    //RigidBody velocities
+    Vector3 RBvelocity, RBAngVelocity;
+
     //audio data
     AudioData audio;
 
@@ -22,6 +25,12 @@ public class Frame
         scale = scale_;
     }
 
+    //RigidBody set velocity data
+    public void SetRBVelocities(Vector3 v, Vector3 aV)
+    {
+        RBvelocity = v;
+        RBAngVelocity = aV;
+    }
 
     //audio set data
     public void SetAudioData(AudioData data)
@@ -39,11 +48,14 @@ public class Frame
     public Vector3 GetPosition() { return pos; }
     public Vector3 GetScale() { return scale; }
     public Quaternion GetRotation() { return rot; }
+
+    //RigidBody getter
+    public Vector3 GetRBVelocity() { return RBvelocity; }
+    public Vector3 GetRBAngularVelocity() { return RBAngVelocity; }
+    
     //Audio getter
     public AudioData GetAudioData() { return audio; }
+   
     //Particle getter
     public float ParticleTime() { return particleTime; }
-
-
-
 }
