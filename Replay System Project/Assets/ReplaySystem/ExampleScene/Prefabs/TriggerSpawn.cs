@@ -6,7 +6,6 @@ public class TriggerSpawn : MonoBehaviour
 {
     public int numInstances = 20;
     public GameObject obj;
-    public ReplayManager replayManager;
     public AudioSource sound;
     public ParticleSystem particle;
 
@@ -20,23 +19,19 @@ public class TriggerSpawn : MonoBehaviour
     private GameObject triggerGO;
 
     private void Update()
-    {
-        if (replayManager.ReplayMode() == false)
+    { 
+        if (insideTrigger)
+            timeInside += Time.deltaTime;
+        else
+            timeInside = 0f;
+
+
+        if (function == Function.TELEPORT && timeInside >= 2f)
         {
-            if (insideTrigger)
-                timeInside += Time.deltaTime;
-            else
-                timeInside = 0f;
-
-
-            if (function == Function.TELEPORT && timeInside >= 2f)
-            {
-                Teleport(triggerGO);
-                if (particle != null)
-                    particle.Stop();
-                
-            }
-                
+            Teleport(triggerGO);
+            if (particle != null)
+                particle.Stop();
+            
         }
     }
     void SpawnMultiple()
@@ -67,34 +62,28 @@ public class TriggerSpawn : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(replayManager.ReplayMode() == false)
-        {
-            sound.Play();
-            if (particle != null)
-                particle.Play();
+        sound.Play();
+        if (particle != null)
+            particle.Play();
 
-            insideTrigger = true;
-            triggerGO = other.gameObject;            
+        insideTrigger = true;
+        triggerGO = other.gameObject;            
 
-            if (function == Function.SPAWN_MULTIPLE)
-                SpawnMultiple();
-                   
-        }
+        if (function == Function.SPAWN_MULTIPLE)
+            SpawnMultiple();
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (replayManager.ReplayMode() == false)
-        {
-            insideTrigger = false;
-            timeInside = 0f;
 
-            if (particle != null)
-                particle.Stop();
+        insideTrigger = false;
+        timeInside = 0f;
 
-            if (function == Function.TELEPORT)
-                sound.Stop();
-        }
+        if (particle != null)
+            particle.Stop();
+
+        if (function == Function.TELEPORT)
+            sound.Stop();
             
     }
 }

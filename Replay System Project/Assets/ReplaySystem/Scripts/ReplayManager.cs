@@ -618,6 +618,7 @@ public class ReplayManager : MonoBehaviour
         for (int i = 0; i < records.Count; i++)
         {
             records[i].SetKinematic(true);
+            records[i].ManageScripts(false);
 
             int auxIndex = frameIndex - records[i].GetFirstFrameIndex();
 
@@ -680,6 +681,7 @@ public class ReplayManager : MonoBehaviour
         for (int i = 0; i < records.Count; i++)
         {
             records[i].SetKinematic(false);
+            records[i].ManageScripts(true);
 
             //Check for instantiated GO
             HandleInstantiatedObjects(records[i], records[i].GetLength() - 1);
@@ -1045,6 +1047,7 @@ public class ReplayManager : MonoBehaviour
             }
 
             records[i].SetKinematic(true);
+            records[i].ManageScripts(false);
         }
     }
 
@@ -1073,6 +1076,7 @@ public class ReplayManager : MonoBehaviour
             }
 
             records[i].SetKinematic(true);
+            records[i].ManageScripts(false);
         }
     }
 
@@ -1166,7 +1170,10 @@ public class ReplayManager : MonoBehaviour
             }
             
             int auxIndex = frameIndex - records[i].GetFirstFrameIndex();
+            
             records[i].SetKinematic(false);
+            records[i].ManageScripts(true);
+
             //reset rigidBody velocities
             Rigidbody rb = records[i].GetRigidbody();
             if (rb != null && IsRecordActiveInReplay(records[i], frameIndex))

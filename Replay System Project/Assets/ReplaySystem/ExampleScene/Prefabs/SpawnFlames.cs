@@ -10,8 +10,6 @@ public class SpawnFlames : MonoBehaviour
     public int distance = 5;
 
     public int numberOfInstantiations = 10;
-
-    public ReplayManager replayManager;
     public GameObject prefab;
 
     // Update is called once per frame
@@ -33,7 +31,7 @@ public class SpawnFlames : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (replayManager.ReplayMode() == false && triggered == false)
+        if (triggered == false)
         {
             triggered = true;
             Instantiate(prefab, gameObject.transform.position + Vector3.forward * distance, gameObject.transform.rotation);

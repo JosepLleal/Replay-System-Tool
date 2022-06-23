@@ -260,6 +260,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &44165387
 Animator:
   serializedVersion: 3
@@ -398,6 +399,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &92214380
 Animator:
   serializedVersion: 3
@@ -674,6 +676,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &130422856
 Animator:
   serializedVersion: 3
@@ -742,6 +745,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!54 &186834372
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -979,7 +983,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   distance: 5
   numberOfInstantiations: 10
-  replayManager: {fileID: 409669698}
   prefab: {fileID: 3402369174321730774, guid: 3b10eebd420e89e4ba89dfeed2ef700c, type: 3}
 --- !u!1 &321098997
 GameObject:
@@ -1956,6 +1959,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!54 &559571231
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2143,7 +2147,6 @@ GameObject:
   - component: {fileID: 601315171}
   - component: {fileID: 601315175}
   - component: {fileID: 601315176}
-  - component: {fileID: 601315177}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -2241,7 +2244,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 601315170}
-  m_LocalRotation: {x: 0.11181807, y: -0.0036711027, z: 0.00033755132, w: 0.9937219}
+  m_LocalRotation: {x: 0.11181807, y: -0.0036699527, z: 0.000337446, w: 0.9937219}
   m_LocalPosition: {x: -31.82, y: 3.606986, z: -47.383095}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -2296,19 +2299,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
---- !u!114 &601315177
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 601315170}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e794635e9f5d3b24bb73d3bcfaaf2ff2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  replay: {fileID: 409669698}
+  scripts: []
 --- !u!1 &614750682 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 093688b2ec639564fa6cf4d254556949, type: 3}
@@ -2333,6 +2324,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &614750685
 Animator:
   serializedVersion: 3
@@ -2376,6 +2368,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &624152978
 Animator:
   serializedVersion: 3
@@ -2557,6 +2550,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &637052419
 Animator:
   serializedVersion: 3
@@ -3240,6 +3234,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &811065911
 Animator:
   serializedVersion: 3
@@ -3377,6 +3372,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!54 &823042397
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3521,7 +3517,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 829960232}
-  m_LocalRotation: {x: 0.10165938, y: -0.004700824, z: 0.00048037697, w: 0.9948081}
+  m_LocalRotation: {x: 0.10165939, y: -0.0046993513, z: 0.00048022653, w: 0.9948081}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -3553,6 +3549,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &840936466
 Animator:
   serializedVersion: 3
@@ -3690,6 +3687,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!54 &858506116
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4171,6 +4169,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!54 &898763087
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4298,6 +4297,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!54 &923076503
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4442,7 +4442,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 944229304}
-  m_LocalRotation: {x: 0.1835573, y: 0.00000001691403, z: -0.0000000031583574, w: 0.98300904}
+  m_LocalRotation: {x: 0.1835573, y: -0.000000016914026, z: 0.0000000031583565, w: 0.98300904}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -4548,6 +4548,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &975992301
 Animator:
   serializedVersion: 3
@@ -4954,6 +4955,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!54 &1019228729
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -5356,6 +5358,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!54 &1124876860
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -5483,6 +5486,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!54 &1126451993
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -10543,7 +10547,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   numInstances: 20
   obj: {fileID: 0}
-  replayManager: {fileID: 409669698}
   sound: {fileID: 1162437105}
   particle: {fileID: 1162437100}
   function: 1
@@ -10658,6 +10661,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!1 &1211522986
 GameObject:
   m_ObjectHideFlags: 0
@@ -10777,6 +10781,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &1237336735
 Animator:
   serializedVersion: 3
@@ -11077,7 +11082,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   numInstances: 20
   obj: {fileID: 3033144867995516270, guid: 14ce733b651669d43a2d7982adfc3138, type: 3}
-  replayManager: {fileID: 409669698}
   sound: {fileID: 1345054999}
   particle: {fileID: 0}
   function: 0
@@ -11109,6 +11113,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!82 &1345054999
 AudioSource:
   m_ObjectHideFlags: 0
@@ -11957,6 +11962,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!199 &1555917201
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -16848,6 +16854,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &1591608506
 Animator:
   serializedVersion: 3
@@ -17060,6 +17067,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!1 &1712189708
 GameObject:
   m_ObjectHideFlags: 0
@@ -17207,6 +17215,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!114 &1722385664
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17221,7 +17230,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   numInstances: 20
   obj: {fileID: 0}
-  replayManager: {fileID: 409669698}
   sound: {fileID: 1722385665}
   particle: {fileID: 1722385667}
   function: 1
@@ -22371,6 +22379,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &1792930531
 Animator:
   serializedVersion: 3
@@ -22414,6 +22423,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &1794371143
 Animator:
   serializedVersion: 3
@@ -22457,6 +22467,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   replay: {fileID: 409669698}
   replayManagerName: ReplayManager
+  scripts: []
 --- !u!95 &1843092379
 Animator:
   serializedVersion: 3
@@ -23604,5 +23615,13 @@ PrefabInstance:
       propertyPath: replay
       value: 
       objectReference: {fileID: 409669698}
+    - target: {fileID: 9199520843202355991, guid: 7e061fef33f04b248964cb63c99d3c91, type: 3}
+      propertyPath: scripts.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9199520843202355991, guid: 7e061fef33f04b248964cb63c99d3c91, type: 3}
+      propertyPath: scripts.Array.data[0]
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7e061fef33f04b248964cb63c99d3c91, type: 3}

@@ -13,6 +13,11 @@ public class Record : MonoBehaviour
     //Replaymanager name in Scene
     [SerializeField]string replayManagerName = "ReplayManager";
 
+    //Scripts of the GO that dont have to be disabled during replay
+    [Header("Scripts to NOT disable")]
+    [Tooltip("Drag and drop the scripts that dont have to be disabled during replay.")]
+    [SerializeField] MonoBehaviour[] scripts = null;
+
     //List of recorded Frames 
     private List<Frame> frames = new List<Frame>();
 
@@ -195,6 +200,29 @@ public class Record : MonoBehaviour
                         frames.RemoveAt(0);
             }
         }
+    }
+
+    public void ManageScripts(bool enable)
+    {
+        MonoBehaviour[] allScripts = gameObject.GetComponents<MonoBehaviour>();
+        foreach (MonoBehaviour script in allScripts)
+        {
+            if (script != this && CheckScriptsList(script) == false)
+                script.enabled = enable;
+        }
+    }
+
+    bool CheckScriptsList(MonoBehaviour s)
+    {
+        bool ret = false;
+
+        foreach (MonoBehaviour script in scripts)
+        {
+            if (script == s)
+                ret = true;break;
+        }
+
+        return ret;
     }
 
     //SETTERS

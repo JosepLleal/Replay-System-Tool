@@ -18,22 +18,19 @@ public class AudioExample : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(replayManager.ReplayMode() == false)
+        timer += Time.deltaTime;
+
+        if (timer >= 10.0f)
         {
-            timer += Time.deltaTime;
+            source.Play();
+            particle.Play();
 
-            if (timer >= 10.0f)
-            {
-                source.Play();
-                particle.Play();
+            if (sphere != null)
+                replayManager.DestroyRecordedGO(sphere);
 
-                if (sphere != null)
-                    replayManager.DestroyRecordedGO(sphere);
-
-                sphere = Instantiate(ballPrefab);
-                sphere.transform.position = gameObject.transform.position;
-                timer = 0;
-            }
+            sphere = Instantiate(ballPrefab);
+            sphere.transform.position = gameObject.transform.position;
+            timer = 0;
         }
     }
 }

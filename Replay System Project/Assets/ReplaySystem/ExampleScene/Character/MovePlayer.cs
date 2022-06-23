@@ -21,12 +21,8 @@ public class MovePlayer : MonoBehaviour
     private bool isJumping = false;
     private bool isGrounded = false;
 
-    public ReplayManager replay;
-
     private void Start()
     {
-        if (replay == null)
-            replay = GameObject.Find("ReplayManager").GetComponent<ReplayManager>();
 
         if (cam == null)
             cam = GameObject.Find("Camera").transform;
@@ -34,8 +30,6 @@ public class MovePlayer : MonoBehaviour
     }
     private void Update()
     {
-        if (replay.ReplayMode())
-            return;
 
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
@@ -103,8 +97,6 @@ public class MovePlayer : MonoBehaviour
 
         moveDir = moveDir.normalized * speed;
         moveDir.y = velocity.y;
-
-        Debug.Log(moveDir);
 
         controller.Move(moveDir * Time.deltaTime);
     }
