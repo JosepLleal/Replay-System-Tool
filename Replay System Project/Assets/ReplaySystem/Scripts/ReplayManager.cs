@@ -83,21 +83,6 @@ public class ReplayManager : MonoBehaviour
     //Update is called once per frame
     void Update()
     {
-
-        //if (Input.GetKeyDown(KeyCode.T))
-        //{
-        //    StartTravelBack(5f);
-        //}
-
-        //if (Input.GetKeyDown(KeyCode.Y))
-        //{
-        //    StartTravelBack();
-        //}
-        //else if (Input.GetKeyUp(KeyCode.Y))
-        //{
-        //    ExitTravelBack();
-        //}
-
         if (isReplayMode)
         {
             // Replay playing 
@@ -149,7 +134,7 @@ public class ReplayManager : MonoBehaviour
                                 if (interpolation)
                                     time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetAnimFramesRecorded();
 
-                                //TEST: Speed of replay
+                                //Speed of replay
                                 time *= speeds[speedIndex];
 
                                 if (animator.playbackTime + time <= animator.recorderStopTime)
@@ -233,22 +218,21 @@ public class ReplayManager : MonoBehaviour
             {
                 recordTimer ++;
 
-                if (recordTimer >= Application.targetFrameRate * recordInterval)
+                for (int i = 0; i < records.Count; i++)
                 {
-                    for (int i = 0; i < records.Count; i++)
-                    {
+                    //Check if the deletion of the record is already out of the replay
+                    CheckDeletedObjects(records[i]);
+                    //update instantiation and deletion frames
+                    records[i].UpdateFramesNum();
+                    //Update recorded frames of animators, to know how many animator frames were recorded
+                    records[i].IncreaseRecordedAnimatorFrames();
+
+                    if(recordTimer >= Application.targetFrameRate * recordInterval)
                         records[i].RecordFrame();
-
-                        //Check if the deletion of the record is already out of the replay
-                        CheckDeletedObjects(records[i]);
-                        //update instantiation and deletion frames
-                        records[i].UpdateFramesNum();
-                        //Update recorded frames of animators, to know how many animator frames were recorded
-                        records[i].IncreaseRecordedAnimatorFrames();
-                    }
-
-                    recordTimer = 0;
                 }
+
+                if (recordTimer >= Application.targetFrameRate * recordInterval)
+                        recordTimer = 0;
             }
             else
             {
@@ -1138,6 +1122,8 @@ public class ReplayManager : MonoBehaviour
                         if (interpolation)
                             time = (animator.recorderStopTime - animator.recorderStartTime) / records[i].GetAnimFramesRecorded();
 
+                        time *= speeds[speedIndex];
+
                         animator.playbackTime -= time;
                     }
 
@@ -1167,7 +1153,7 @@ public class ReplayManager : MonoBehaviour
         }
     }
 
-    void ExitTravelBack()
+    public void ExitTravelBack()
     {
         for (int i = 0; i < records.Count; i++)
         {

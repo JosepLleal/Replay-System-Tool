@@ -13,8 +13,13 @@ public class MovePlayer : MonoBehaviour
 
     public float pushPower = 2.0f;
     public float speed = 6f;
+    public float jumpSpeed = 4f;
     public float turnSmoothTime = 0.1f;
     float turnSmoothVelocity;
+    float timerGrounded = 0;
+
+    private bool isJumping = false;
+    private bool isGrounded = false;
 
     public ReplayManager replay;
 
@@ -37,27 +42,71 @@ public class MovePlayer : MonoBehaviour
 
         Vector3 direction = new Vector3(horizontal, 0, vertical).normalized;
 
-        if(direction.magnitude >= 0.1f)
+        Vector3 moveDir = Vector3.zero;
+
+        if (direction.magnitude >= 0.1f)
         {
-            animator.SetBool("isWalking", true);
+            if (controller.isGrounded)
+                animator.SetBool("isWalking", true);
 
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
-            Vector3 moveDir = Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
-            controller.Move(moveDir.normalized * speed * Time.deltaTime);
+            moveDir = Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
+
+            //controller.Move(moveDir.normalized * speed * Time.deltaTime);
         }
         else
         {
             animator.SetBool("isWalking", false);
         }
 
+
+
         if (controller.isGrounded)
-            velocity.y = 0f;
+        {
+            timerGrounded += Time.deltaTime;
+            animator.SetBool("isGrounded", true);
+            isGrounded = true;
+            animator.SetBool("isJumping", false);
+            isJumping = false;
+            animator.SetBool("isFalling", false);
+
+            if (Input.GetKeyDown(KeyCode.Space) && timerGrounded > 0.2f)
+            {
+                velocity.y = jumpSpeed;
+                animator.SetBool("isJumping", true);
+                isJumping = true;
+            }
+        }
+        else
+        {
+            timerGrounded = 0f;
+            animator.SetBool("isGrounded", false);
+            if (isGrounded && isJumping == false)
+                velocity.y = gravity * 4 * Time.deltaTime;
+
+            isGrounded = false;
+
+            if ((isJumping && velocity.y < 0f) || velocity.y < -2f)
+            {
+                animator.SetBool("isFalling", true);
+            }
+        }
+
 
         velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
+
+        //if (velocity.y > 30f)
+        //    velocity.y = 30f;
+
+        moveDir = moveDir.normalized * speed;
+        moveDir.y = velocity.y;
+
+        Debug.Log(moveDir);
+
+        controller.Move(moveDir * Time.deltaTime);
     }
 
     void OnControllerColliderHit(ControllerColliderHit hit)
@@ -82,4 +131,5 @@ public class MovePlayer : MonoBehaviour
         // Apply the push
         body.velocity = pushDir * pushPower * speed;
     }
+
 }

@@ -2241,7 +2241,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 601315170}
-  m_LocalRotation: {x: 0.11181807, y: -0.0036697702, z: 0.0003374289, w: 0.9937219}
+  m_LocalRotation: {x: 0.11181807, y: -0.0036711027, z: 0.00033755132, w: 0.9937219}
   m_LocalPosition: {x: -31.82, y: 3.606986, z: -47.383095}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -3521,7 +3521,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 829960232}
-  m_LocalRotation: {x: 0.10165938, y: -0.004699118, z: 0.00048020255, w: 0.9948081}
+  m_LocalRotation: {x: 0.10165938, y: -0.004700824, z: 0.00048037697, w: 0.9948081}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -23420,7 +23420,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2809413419116962254, guid: 2e298f85a08feb54799879133844dcf5, type: 3}
       propertyPath: interpolation
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2809413419116962254, guid: 2e298f85a08feb54799879133844dcf5, type: 3}
       propertyPath: recordMaxLength
@@ -23592,6 +23592,14 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 601315174}
+    - target: {fileID: 9199520843202355984, guid: 7e061fef33f04b248964cb63c99d3c91, type: 3}
+      propertyPath: replay
+      value: 
+      objectReference: {fileID: 409669698}
+    - target: {fileID: 9199520843202355984, guid: 7e061fef33f04b248964cb63c99d3c91, type: 3}
+      propertyPath: jumpSpeed
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 9199520843202355991, guid: 7e061fef33f04b248964cb63c99d3c91, type: 3}
       propertyPath: replay
       value: 
