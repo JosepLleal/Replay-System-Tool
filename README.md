@@ -8,38 +8,6 @@ The user can customize the replay duration, to use or not the interpolation opti
 
 At the moment of the release, the replay is only suited for 3D games.
 
-## Controls:
-
-### Player movement:
-
-**A** - Move player left.
-
-**D** - Move player right.
-
-**W** - Move player forward.
-
-**S** - Move player backwards.
-
-**SPACE** - Jump.
-
-**Mouse movement** - Rotate player camera.
-
-### Replay Camera:
-
-**A** - Move left.
-
-**D** - Move right.
-
-**W** - Move forward.
-
-**S** - Move backward.
-
-**Mouse right click** - Rotate camera
-
-## Debug Keys:
-**R** - Enter and exit replay mode.
-
-**F4** - Close the executable.
 
 
 ## Authors:
